@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit immediately if a command fails
-echo "📌 Install will exit immediatelt id a command fails"
+echo "📌 Install will exit immediatelt id a command fails..."
 set -e  
 
 echo "🚀 Starting SnekBot installation..."
@@ -32,4 +32,25 @@ sudo apt update && sudo apt install ros-dev-tools
 
 echo "📌 Installing ROS 2 Jazzy Base..."
 sudo apt update
+sudo apt -y upgrade
 sudo apt install -y ros-jazzy-ros-base
+
+echo "📌 Installing Micro-ROS Packages..."
+mkdir ~/SnekBot/src
+cd ~/SnekBot/src
+git clone https://github.com/micro-ROS/micro-ROS-Agent -b jazzy
+git clone https://github.com/micro-ROS/micro_ros_msgs -b jazzy
+
+echo "📌 Installing FoxGlove Monitoring..."
+sudo apt install ros-$ROS_DISTRO-foxglove-bridge
+
+echo "📌 Installing Dependancies"
+cd ~/SnekBot
+sudo rosdep init
+rosdep update
+rosdep install --from-paths src --ignore-src -r -y
+
+echo "📌 Building the ROS2 Workspace"
+cd ~/SnekBot
+colcon build --symlink-install
+source install/setup.bash
