@@ -42,12 +42,22 @@ git clone https://github.com/micro-ROS/micro-ROS-Agent -b jazzy
 git clone https://github.com/micro-ROS/micro_ros_msgs -b jazzy
 
 echo "📌 Installing FoxGlove Monitoring..."
-sudo apt install ros-$ROS_DISTRO-foxglove-bridge
+sudo apt install -y ros-$ROS_DISTRO-foxglove-bridge
 
-echo "📌 Installing Dependancies"
+echo "📌 Installing Dependencies"
 cd ~/SnekBot
+
+# Check if the rosdep sources file exists, and remove it if found
+if [ -f /etc/ros/rosdep/sources.list.d/20-default.list ]; then
+  echo "⚠️ Existing rosdep sources list found. Removing..."
+  sudo rm /etc/ros/rosdep/sources.list.d/20-default.list
+fi
+
+# Reinitialize rosdep and update sources
 sudo rosdep init
 rosdep update
+
+# Install dependencies
 rosdep install --from-paths src --ignore-src -r -y
 
 echo "📌 Building the ROS2 Workspace"
