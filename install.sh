@@ -17,7 +17,7 @@ export LANG=en_US.UTF-8
 
 echo "📌 Enabling required repositories..."
 sudo apt install -y software-properties-common
-sudo add-apt-repository universe
+sudo add-apt-repository -y universe
 
 echo "📌 Adding ROS 2 GPG key..."
 sudo apt install -y curl
