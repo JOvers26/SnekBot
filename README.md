@@ -22,7 +22,8 @@ Clone SnekBot repository:
 
 ```bash
 git clone https://github.com/JOvers26/SnekBot.git ~/SnekBot
-cd ~/ros2_ws
+cd ~/SnekBot
+chmod +x install.sh
 ```
 
 #### Set locale:
