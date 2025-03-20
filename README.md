@@ -1,65 +1,82 @@
 # SnekBot
 
 ## Six-Axis Robotic Arm and Control System for ROAR Lunar Surface Operations
-
 This project is a work in progress and setup is subject to change.
 
 ## Project Summary
 SnekBot is a six-axis robotic arm designed for the QUT ROAR team to use in the Australian Rover Challenge (ARCh)
 
-Key Features:
-- **Modular Design:** 3D-printed and aluminum frame for durability and customization.
-- **ESP32 Motor Control:** Interprets ROS2 movement commands and sends precise motor signals.
-- **Raspberry Pi 5 Compute Module:** Handles ROS2 for motion planning and high-level control.
-- **ROS2 Integration:** Allows seamless component integration and future applicaitons
 
-## Project Goal
-SnekBot aims to provide a robust and adaptable robotic arm platform for simulated lunar applications
 
 ## Installation & Setup
 ### Initial Steps
-Clone SnekBot repository:
+Ensure Ubuntu 24.04 server is flashed on the Raspberry Pi 5 and configured for remote access via SSH.
 
-```bash
-git clone https://github.com/JOvers26/SnekBot.git ~/SnekBot
+## **1. Set Locale**
+Ensure your system uses **UTF-8** encoding:
+
+```sh
+locale  # Check for UTF-8
+
+sudo apt update && sudo apt install locales
+sudo locale-gen en_US en_US.UTF-8
+sudo update-locale LC_ALL=en_US.UTF-8 LANG=en_US.UTF-8
+export LANG=en_US.UTF-8
+
+locale  # Verify settings
 ```
 
-#### Set locale:
-Install ROS 2 Jazzy (Ubuntu Noble 24.04)
-```bash
-cd ~/SnekBot
-chmod +x install.sh
-chmod +x uninstall.sh
-./install.sh
+## **2. Enable Required Repositories**
+
+```sh
+sudo apt install software-properties-common
+sudo add-apt-repository universe
 ```
 
-#### Building the ROS2 Workspace:
-```bash
-cd ~/SnekBot
-colcon build --symlink-install
-source install/setup.bash
+## **3. Add ROS 2 GPG Key**
+
+```sh
+sudo apt update && sudo apt install curl -y
+sudo curl -sSL https://raw.githubusercontent.com/ros/rosdistro/master/ros.key -o /usr/share/keyrings/ros-archive-keyring.gpg
 ```
 
-#### Install and activate virtual environment:
-```bash
-sudo apt install -y python3.12-venv
-python3 -m venv ~/SnekBot/venv
-source ~/SnekBot/venv/bin/activate
+## **4. Add ROS 2 Repository**
+
+```sh
+echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 ```
 
+## **5. Install Development Tools (Optional)**
 
-#### Installing robotics toolbox python
-```bash
-pip install --upgrade pip
-pip install setuptools
-pip install roboticstoolbox-python
-pip install "numpy<2"
+```sh
+sudo apt update && sudo apt install ros-dev-tools
 ```
 
-#### Change USB permissions
-```bash
-sudo usermod -aG dialout $USER
-newgrp dialout
+## **6. Update Repository Caches**
+
+```sh
+sudo apt update
+```
+
+## **7. Upgrade System**
+
+```sh
+sudo apt upgrade
+```
+
+## **8. Install ROS 2 Jazzy Base**
+
+```sh
+sudo apt install ros-jazzy-ros-base
+```
+
+## **9. Setup Environment**
+Ensure ROS 2 is sourced correctly:
+
+```sh
+# Replace ".bash" with your shell if you're not using Bash
+# Possible values: setup.bash, setup.sh, setup.zsh
+source /opt/ros/jazzy/setup.bash
 ```
 
 
