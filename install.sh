@@ -37,7 +37,6 @@ sudo apt install -y ros-jazzy-ros-base
 # Install additional dependencies required for building ROS 2 messages
 echo "📌 Installing required dependencies for ROS 2 message generation..."
 sudo apt install -y ros-jazzy-rosidl-typesupport-c
-sudo apt install -y ros-jazzy-rosidl-core
 sudo apt install -y ros-jazzy-rosidl-default-generators
 
 echo "📌 Installing Micro-ROS Packages..."
