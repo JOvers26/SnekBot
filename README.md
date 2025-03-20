@@ -33,4 +33,33 @@ chmod +x uninstall.sh
 ./install.sh
 ```
 
+#### Building the ROS2 Workspace:
+```bash
+cd ~/SnekBot
+colcon build --symlink-install
+source install/setup.bash
+```
+
+#### Install and activate virtual environment:
+```bash
+sudo apt install -y python3.12-venv
+python3 -m venv ~/SnekBot/venv
+source ~/SnekBot/venv/bin/activate
+```
+
+
+#### Installing robotics toolbox python
+```bash
+pip install --upgrade pip
+pip install setuptools
+pip install roboticstoolbox-python
+pip install "numpy<2"
+```
+
+#### Change USB permissions
+```bash
+sudo usermod -aG dialout $USER
+newgrp dialout
+```
+
 
