@@ -21,13 +21,13 @@ SnekBot aims to provide a robust and adaptable robotic arm platform for simulate
 Clone SnekBot repository:
 
 ```bash
-git clone https://github.com/JOvers26/SnekBot.git ~/uros_ws
+git clone https://github.com/JOvers26/SnekBot.git ~/SnekBot
 ```
 
 #### Set locale:
 Install ROS 2 Jazzy (Ubuntu Noble 24.04)
 ```bash
-cd ~/uros_ws
+cd ~/SnekBot
 chmod +x install.sh
 chmod +x uninstall.sh
 ./install.sh

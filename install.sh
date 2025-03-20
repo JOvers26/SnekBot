@@ -36,8 +36,8 @@ sudo apt -y upgrade
 sudo apt install -y ros-jazzy-ros-base
 
 echo "📌 Installing Micro-ROS Packages..."
-mkdir ~/uros_ws/src
-cd ~/uros_ws/src
+mkdir ~/SnekBot/src
+cd ~/SnekBot/src
 git clone https://github.com/micro-ROS/micro-ROS-Agent -b jazzy
 git clone https://github.com/micro-ROS/micro_ros_msgs -b jazzy
 
@@ -45,7 +45,7 @@ echo "📌 Installing FoxGlove Monitoring..."
 sudo apt install -y ros-$ROS_DISTRO-foxglove-bridge
 
 echo "📌 Installing Dependencies"
-cd ~/uros_ws
+cd ~/SnekBot
 
 # Check if the rosdep sources file exists, and remove it if found
 if [ -f /etc/ros/rosdep/sources.list.d/20-default.list ]; then
@@ -61,6 +61,6 @@ rosdep update
 rosdep install --from-paths src --ignore-src -r -y
 
 echo "📌 Building the ROS2 Workspace"
-cd ~/uros_ws
+cd ~/SnekBot
 colcon build --symlink-install
 source install/setup.bash
