@@ -27,12 +27,15 @@ echo "📌 Adding ROS 2 repository..."
 echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-archive-keyring.gpg] http://packages.ros.org/ros2/ubuntu $(. /etc/os-release && echo $UBUNTU_CODENAME) main" | sudo tee /etc/apt/sources.list.d/ros2.list > /dev/null
 
 echo "📌 Installing development tools"
-sudo apt update && sudo apt install ros-dev-tools
+sudo apt update && sudo apt install -y ros-dev-tools
 
 echo "📌 Installing ROS 2 Jazzy Base..."
 sudo apt update
 sudo apt -y upgrade
 sudo apt install -y ros-jazzy-ros-base
+
+echo "📌 Sourcing ROS2 installation"
+source /opt/ros/jazzy/setup.bash
 
 # Install additional dependencies required for building ROS 2 messages
 echo "📌 Installing required dependencies for ROS 2 message generation..."
