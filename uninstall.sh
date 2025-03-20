@@ -24,9 +24,9 @@ sudo apt -y upgrade
 echo "📌 Navigating to the home directory..."
 cd $HOME
 
-# Remove the 'uros_ws' directory
-echo "📌 Removing the 'uros_ws' directory..."
-rm -rf uros_ws/
+# Remove the 'SnekBot' directory
+echo "📌 Removing the 'SnekBot' directory..."
+rm -rf SnekBot/
 
 # Done
 echo "📌 Cleanup and removal complete!"

@@ -1,7 +1,7 @@
 #!/bin/bash
 
 # Exit immediately if a command fails
-echo "📌 Install will exit immediatelt id a command fails..."
+echo "📌 Install will exit immediately if a command fails..."
 set -e  
 
 echo "🚀 Starting SnekBot installation..."
@@ -29,11 +29,16 @@ echo "deb [arch=$(dpkg --print-architecture) signed-by=/usr/share/keyrings/ros-a
 echo "📌 Installing development tools"
 sudo apt update && sudo apt install ros-dev-tools
 
-
 echo "📌 Installing ROS 2 Jazzy Base..."
 sudo apt update
 sudo apt -y upgrade
 sudo apt install -y ros-jazzy-ros-base
+
+# Install additional dependencies required for building ROS 2 messages
+echo "📌 Installing required dependencies for ROS 2 message generation..."
+sudo apt install -y ros-jazzy-rosidl-typesupport-c
+sudo apt install -y ros-jazzy-rosidl-core
+sudo apt install -y ros-jazzy-rosidl-default-generators
 
 echo "📌 Installing Micro-ROS Packages..."
 mkdir ~/SnekBot/src
