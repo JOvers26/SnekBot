@@ -1,9 +1,32 @@
 #!/bin/bash
 
-sudo apt remove ~nros-jazzy-* && sudo apt autoremove
-sudo rm /etc/apt/sources.list.d/ros2.list
+# Remove all ROS 2 Jazzy packages and automatically confirm
+echo "📌 Removing ROS 2 Jazzy packages..."
+sudo apt -y remove ros-jazzy-* && sudo apt -y autoremove
+
+# Remove the ROS 2 repository list file from the sources directory
+echo "📌 Removing ROS 2 source list..."
+sudo rm -f /etc/apt/sources.list.d/ros2.list
+
+# Update package list after removing the repository
+echo "📌 Updating package list..."
 sudo apt -y update
-sudo apt iy autoremove
+
+# Run autoremove to clean up any leftover dependencies
+echo "📌 Running autoremove to clean up unused packages..."
+sudo apt -y autoremove
+
+# Upgrade any remaining packages to their latest versions
+echo "📌 Upgrading packages..."
 sudo apt -y upgrade
+
+# Navigate to the home directory
+echo "📌 Navigating to the home directory..."
 cd $HOME
-rm -r SnekBot/
+
+# Remove the 'uros_ws' directory
+echo "📌 Removing the 'uros_ws' directory..."
+rm -rf uros_ws/
+
+# Done
+echo "📌 Cleanup and removal complete!"
