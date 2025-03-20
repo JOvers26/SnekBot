@@ -66,30 +66,3 @@ rosdep update
 
 # Install dependencies
 rosdep install --from-paths src --ignore-src -r -y
-
-echo "📌 Building the ROS2 Workspace"
-cd ~/SnekBot
-colcon build --symlink-install
-source install/setup.bash
-
-echo "📌 Rebuild ROS2 Workspace"
-cd ~/SnekBot
-colcon build --symlink-install
-source install/setup.bash
-
-echo "📌 Install and activate virtual environment"
-sudo apt install -y python3.12-venv
-python3 -m venv ~/SnekBot/venv
-source ~/SnekBot/venv/bin/activate
-
-echo "📌 Installing robotics toolbox python"
-pip install --upgrade pip
-pip install setuptools
-pip install roboticstoolbox-python
-
-echo "📌 Fixing numpy version dependancies"
-pip install "numpy<2"
-
-echo "📌 Change USB permissions"
-sudo usermod -aG dialout $USER
-newgrp dialout
