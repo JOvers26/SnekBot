@@ -27,10 +27,8 @@ previous_state = {
     "right_trigger": 0.0
 }
 
-# Define a function to print joystick axis movements
+# Define a function to print joystick axis movements in an array
 def print_joystick_status():
-    global previous_state
-    
     # Left stick (axis 0 and 1)
     left_x = joystick.get_axis(0)
     left_y = joystick.get_axis(1)
@@ -43,35 +41,18 @@ def print_joystick_status():
     left_trigger = joystick.get_axis(2)
     right_trigger = joystick.get_axis(5)
     
-    # Only print if there's a change in any axis
-    changed = False
-
-    if left_x != previous_state["left_x"]:
-        print(f"Left Stick - X: {left_x:.2f}")
-        previous_state["left_x"] = left_x
-        changed = True
-    if left_y != previous_state["left_y"]:
-        print(f"Left Stick - Y: {left_y:.2f}")
-        previous_state["left_y"] = left_y
-        changed = True
-    if right_x != previous_state["right_x"]:
-        print(f"Right Stick - X: {right_x:.2f}")
-        previous_state["right_x"] = right_x
-        changed = True
-    if right_y != previous_state["right_y"]:
-        print(f"Right Stick - Y: {right_y:.2f}")
-        previous_state["right_y"] = right_y
-        changed = True
-    if left_trigger != previous_state["left_trigger"]:
-        print(f"Left Trigger: {left_trigger:.2f}")
-        previous_state["left_trigger"] = left_trigger
-        changed = True
-    if right_trigger != previous_state["right_trigger"]:
-        print(f"Right Trigger: {right_trigger:.2f}")
-        previous_state["right_trigger"] = right_trigger
-        changed = True
+    # Create the status array (dictionary)
+    status = {
+        "Left Stick X": round(left_x, 2),
+        "Left Stick Y": round(left_y, 2),
+        "Right Stick X": round(right_x, 2),
+        "Right Stick Y": round(right_y, 2),
+        "Left Trigger": round(left_trigger, 2),
+        "Right Trigger": round(right_trigger, 2)
+    }
     
-    return changed
+    # Print the status as one big array (or dictionary)
+    print(status)
 
 try:
     while True:
@@ -81,9 +62,8 @@ try:
                 pygame.quit()
                 exit()
 
-        # Print joystick movements if there's a change
-        if print_joystick_status():
-            print("Movement detected!")
+        # Print joystick movements continuously
+        print_joystick_status()
         
         # Wait a short time before updating the status again
         time.sleep(0.1)
