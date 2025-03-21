@@ -15,7 +15,7 @@ else:
     print("No joystick detected. Please connect a joystick.")
     exit()
 
-def apply_deadzone(value, threshold=1):
+def apply_deadzone(value, threshold=0.3):
     return value if abs(value) > threshold else 0
 
 snekbot = SnekBot()
@@ -66,12 +66,14 @@ while running:
         if new_theta != theta:
             theta = new_theta
             snekbot.move_grippers(theta)
+        
+        print(z_axis, x_axis, y_axis, P, Y, R)
 
-        step = np.array([z_axis * speed_factor * 3, x_axis * speed_factor, y_axis * speed_factor, 
-                         P * speed_factor * 300, Y * speed_factor * 40, R * speed_factor * 300])
+        #step = np.array([z_axis * speed_factor * 3, x_axis * speed_factor, y_axis * speed_factor, 
+                         #P * speed_factor * 300, Y * speed_factor * 40, R * speed_factor * 300])
 
-        if np.any(step):
-            snekbot.set_target_position(step)
+        # if np.any(step):
+        #     snekbot.set_target_position(step)
 
     time.sleep(0.05)
 
