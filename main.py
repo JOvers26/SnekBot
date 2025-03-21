@@ -1,7 +1,6 @@
 from snekbot_publisher import SnekBotPublisher
 import rclpy
 import random
-import time
 
 def main():
     rclpy.init()  # Initialize ROS 2
@@ -9,21 +8,15 @@ def main():
     # Create an instance of the publisher class, which will initialize the node
     publisher_node = SnekBotPublisher()
 
-    # Set the rate of publishing (e.g., 100 Hz)
-    rate = 100  # 100 times per second
-    period = 1.0 / rate  # Period for time.sleep in seconds
-
-    # Run the loop to send messages as fast as possible
-    while rclpy.ok():
-        # Send a random position message
+    # Create a timer to send messages as fast as possible
+    def send_continuous_position():
         publisher_node.send_position(str(random.randint(0, 100)))
-        print("tick`")
 
-        # Sleep for the specified period to control the rate
-        time.sleep(period)
+    # Set a high-frequency timer, such as 10 Hz or higher if needed
+    publisher_node.create_timer(0.01, send_continuous_position)  # 0.01 sec = 100 Hz
 
-        # Allow ROS 2 to process callbacks (important for maintaining the node)
-        rclpy.spin_once(publisher_node)
+    # Keep the node running and processing messages
+    rclpy.spin(publisher_node)
 
     # Shutdown ROS 2 once done
     rclpy.shutdown()
