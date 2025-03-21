@@ -8,36 +8,33 @@ class SnekBotPublisher(Node):
         
         # Create a publisher for position
         self.position_publisher_ = self.create_publisher(Float32MultiArray, 'snekbot_position', 10)
+
+        # Create a subscriber for receiving position updates
+        self.position_subscription = self.create_subscription(
+            Float32MultiArray, 
+            'position_updates',  # Topic to subscribe to
+            self.position_callback, 
+            10
+        )
         
-        # Initialize joint position data (default)
-        self.joint_positions = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+        self.get_logger().info("SnekBot Publisher is running and waiting for position updates.")
         
-        # Timer to periodically publish position
-        self.timer = self.create_timer(1.0, self.publish_positions)  # Publish every second
-        self.get_logger().info("SnekBot Publisher is running!")
+    def position_callback(self, msg):
+        """Callback to handle incoming position updates."""
+        # The received position data is in msg.data
+        self.get_logger().info(f'Received Position Update: {msg.data}')
+        
+        # Publish the received position data to the snekbot_position topic
+        self.position_publisher_.publish(msg)
+        self.get_logger().info(f'Publishing Position: {msg.data}')
 
-    def update_positions(self, new_positions):
-        """Allows the positions to be updated."""
-        self.joint_positions = new_positions
-
-    def publish_positions(self):
-        """Publishes the current positions repeatedly."""
-        position_msg = Float32MultiArray()
-        position_msg.data = self.joint_positions
-        self.position_publisher_.publish(position_msg)
-        self.get_logger().info(f'Publishing Position: {position_msg.data}')
-
-def run_publisher(positions=None):
+def run_publisher():
     """Starts the publisher and keeps it running."""
     rclpy.init()
     node = SnekBotPublisher()
 
-    # Update positions if new ones are provided
-    if positions:
-        node.update_positions(positions)
-
-    # Keep the program running, publishing positions on the timer
-    rclpy.spin(node)  # This keeps the node alive until manually terminated
+    # Keep the program running, subscribing to the position updates topic
+    rclpy.spin(node)
 
     # Shutdown ROS 2 when done
     rclpy.shutdown()

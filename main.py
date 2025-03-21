@@ -1,22 +1,37 @@
 import random
+import rclpy
+from std_msgs.msg import Float32MultiArray
+from rclpy.node import Node
 import time
-from snekbot_publisher import run_publisher  # Import the function from the file above
 
-def generate_random_positions():
-    """Generate random joint positions every second."""
-    return [random.uniform(0.0, 10.0) for _ in range(7)]  # Random values for 7 joints
+class PositionPublisher(Node):
+    def __init__(self):
+        super().__init__('position_publisher')
+        self.publisher_ = self.create_publisher(Float32MultiArray, 'position_updates', 10)
 
-def run_publisher_with_random_positions():
-    """Run the publisher, updating positions randomly every second."""
-    while True:
-        # Generate new random positions for the joints
-        new_positions = generate_random_positions()
+    def publish_random_positions(self):
+        """Generate random joint positions and publish them."""
+        joint_positions = [random.uniform(0.0, 10.0) for _ in range(7)]  # Random positions for 7 joints
+        position_msg = Float32MultiArray()
+        position_msg.data = joint_positions
+        self.publisher_.publish(position_msg)
+        self.get_logger().info(f'Publishing random positions: {joint_positions}')
 
-        # Start the publisher with the new random positions
-        run_publisher(new_positions)
 
-        # Wait for 1 second before generating new random positions
-        time.sleep(1)  # Import time at the top if it's not already
+def main():
+    rclpy.init()
+    
+    # Create a PositionPublisher to send random positions
+    node = PositionPublisher()
+
+    # Continuously publish random positions every second
+    while rclpy.ok():
+        node.publish_random_positions()
+        rclpy.spin_once(node)  # Allow ROS to process callbacks
+        time.sleep(1)  # Wait for 1 second before sending the next update
+
+    # Shutdown ROS 2 when done
+    rclpy.shutdown()
 
 if __name__ == '__main__':
-    run_publisher_with_random_positions()
+    main()
