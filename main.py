@@ -1,5 +1,6 @@
 import numpy as np
 import pygame
+print(pygame.__version__)
 import time
 from SnekBot import SnekBot
 
