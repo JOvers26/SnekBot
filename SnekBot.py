@@ -24,7 +24,7 @@ class SnekBot(ERobot):
         self.q = self.configs["init"]
 
         self.env = swift.Swift()
-        self.env.launch(realtime=True, headless=False)
+        self.env.launch(realtime=True, headless=True)
         self.env.add(self, robot_alpha=0, collision_alpha=1)
         self.current_position = self.set_position()
 
