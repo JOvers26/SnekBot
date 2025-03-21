@@ -14,7 +14,7 @@ from std_msgs.msg import Float64
 
 
 class SnekBot(ERobot, Node):
-    def __init__(self, urdf_filename="SnekBot/SnekBot.urdf"):
+    def __init__(self, urdf_filename="SnekBot/SnekBot/SnekBot.urdf"):
         ERobot.__init__(self, urdf_filename)
         Node.__init__(self, "snekbot")
 
