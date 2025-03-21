@@ -1,43 +1,22 @@
-import rclpy
-from rclpy.node import Node
-from std_msgs.msg import Float32MultiArray
+import random
+import time
+from snekbot_publisher import run_publisher  # Import the function from the file above
 
-class SnekBotPublisher(Node):
-    def __init__(self):
-        super().__init__('snekbot_publisher')
-        
-        # Create a publisher for position
-        self.position_publisher_ = self.create_publisher(Float32MultiArray, 'snekbot_position', 10)
-        
-        # Timer to publish every second
-        self.timer = self.create_timer(1.0, self.publish_message)
-        self.get_logger().info("SnekBot Publisher has started!")
-        
-        # Initialize joint position data
-        self.joint_positions = [1.0, 2.0, 3.0, 4.0, 5.0, 6.0, 7.0]
+def generate_random_positions():
+    """Generate random joint positions every second."""
+    return [random.uniform(0.0, 10.0) for _ in range(7)]  # Random values for 7 joints
 
-    def publish_message(self):
-        # Create a message for positions
-        position_msg = Float32MultiArray()
-        
-        # Assign joint positions to the message
-        position_msg.data = self.joint_positions
-        
-        # Publish the position data
-        self.position_publisher_.publish(position_msg)
-        
-        self.get_logger().info(f'Publishing Position: {position_msg.data}')
+def run_publisher_with_random_positions():
+    """Run the publisher, updating positions randomly every second."""
+    while True:
+        # Generate new random positions for the joints
+        new_positions = generate_random_positions()
 
-def main(args=None):
-    rclpy.init(args=args)
-    node = SnekBotPublisher()
-    try:
-        rclpy.spin(node)
-    except KeyboardInterrupt:
-        pass
-    finally:
-        node.destroy_node()
-        rclpy.shutdown()
+        # Start the publisher with the new random positions
+        run_publisher(new_positions)
+
+        # Wait for 1 second before generating new random positions
+        time.sleep(1)  # Import time at the top if it's not already
 
 if __name__ == '__main__':
-    main()
+    run_publisher_with_random_positions()
