@@ -18,8 +18,11 @@ def apply_deadzone(value, threshold=0.2):
     return value if abs(value) > threshold else 0
 
 snekbot = SnekBot()
+print(snekbot)
 time.sleep(1)
 snekbot.move_to_joint_position(snekbot.configs["init"], snekbot.configs["stance"], 200)
+
+print(snekbot.q)
 
 speed_factor = 0.05
 running = True
