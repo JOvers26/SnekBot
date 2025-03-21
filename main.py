@@ -40,7 +40,7 @@ while running:
     if joystick:
         x_axis = -apply_deadzone(joystick.get_axis(0))
         y_axis = apply_deadzone(joystick.get_axis(1))
-        R = -apply_deadzone(joystick.get_axis(2))
+        R = -apply_deadzone(joystick.get_axis(4))
         P = apply_deadzone(joystick.get_axis(3))
 
         z_axis = 0
@@ -57,7 +57,7 @@ while running:
             Y = speed_factor * 2
 
         # Trigger controls for theta
-        left_trigger = joystick.get_axis(4)  # Assuming axis 4 is left trigger
+        left_trigger = joystick.get_axis(2)  # Assuming axis 4 is left trigger
         right_trigger = joystick.get_axis(5)  # Assuming axis 5 is right trigger
 
         new_theta = theta + right_trigger * trigger_sensitivity - left_trigger * trigger_sensitivity
@@ -67,6 +67,8 @@ while running:
             theta = new_theta
             snekbot.move_grippers(theta)
         
+        #print(z_axis, x_axis, y_axis, P, Y, R)
+
         print(z_axis, x_axis, y_axis, P, Y, R)
 
         #step = np.array([z_axis * speed_factor * 3, x_axis * speed_factor, y_axis * speed_factor, 
