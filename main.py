@@ -1,7 +1,10 @@
 from snekbot_publisher import SnekBotPublisher
+import rclpy
 
 def main():
-    # Create an instance of the publisher class, which will initialize ROS 2
+    rclpy.init()  # Initialize ROS 2
+
+    # Create an instance of the publisher class, which will initialize the node
     publisher_node = SnekBotPublisher()
 
     # Send a position message
@@ -11,7 +14,7 @@ def main():
     publisher_node.spin()
 
     # Shutdown ROS 2 once done
-    publisher_node.shutdown()
+    rclpy.shutdown()
 
 if __name__ == '__main__':
     main()

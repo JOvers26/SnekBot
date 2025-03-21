@@ -20,7 +20,3 @@ class SnekBotPublisher(Node):
     def spin(self):
         # Keep the node alive and processing events
         rclpy.spin(self)
-    
-    def shutdown(self):
-        # Shutdown the node
-        rclpy.shutdown()
