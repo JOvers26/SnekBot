@@ -14,7 +14,7 @@ else:
     print("No joystick detected. Please connect a joystick.")
     exit()
 
-def apply_deadzone(value, threshold=0.8):
+def apply_deadzone(value, threshold=1):
     return value if abs(value) > threshold else 0
 
 snekbot = SnekBot()
