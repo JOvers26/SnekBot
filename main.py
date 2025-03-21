@@ -17,6 +17,7 @@ def main():
     while rclpy.ok():
         # Send a random position message
         publisher_node.send_position(str(random.randint(0, 100)))
+        print("tick`")
 
         # Sleep for the specified period to control the rate
         time.sleep(period)
