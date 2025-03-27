@@ -76,11 +76,12 @@ For more details, visit the [official ROS 2 documentation](https://docs.ros.org/
 ### **1. Clone the repository**
 ```sh
 git clone https://github.com/JOvers26/SnekBot
+cd ~/Snekbot
 ```
 
 ### **2. Install dependencies**
 ```sh
-cd ~/snekbot_ws
+cd /ros2_ws
 sudo rosdep init
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y
@@ -88,6 +89,7 @@ rosdep install --from-paths src --ignore-src -r -y
 
 ### **3. Install FOXGLOVE Monitoring (Optional)**
 ```sh
+source /opt/ros/jazzy/setup.bash
 sudo apt install ros-$ROS_DISTRO-foxglove-bridge
 ```
 
@@ -115,34 +117,37 @@ pip3 install "numpy<2"
 ### **1. Install Packages**
 ```sh
 sudo apt-get install git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+
+mkdir -p ~/esp
+cd ~/esp
+git clone -b v5.2.5 --recursive https://github.com/espressif/esp-idf.git
+
+
 ```
 
 ### **2. Set up the Tools**
 ```sh
 cd ~/SnekBot/esp-idf-master
+chmod -R +x ~Snekbot/esp-idf-master
 ./install.sh all
 ```
 
 ### **3. Set up the Environment Variables**
 ```sh
-. $HOME/esp/esp-idf/export.sh
+. $HOME/Snekbot/esp-idf-master/export.sh
 pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
+
+# in micro_ros settings set WIFI and Password ssh
+cd ~/SnekBot/esp-idf-master/components/micro_ros_espidf_components-jazzy/examples/int32_publisher
+idf.py set-target esp32s3
+idf.py menuconfig
+
 ```
 
-source /opt/ros/jazzy/setup.bash
-#colcon build --symlink-install
-source install/setup.bash
-python3 -m venv venv
-source venv/bin/activate
+
 ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0
 
 
-
-
-git clone https://github.com/JOvers26/SnekBot ~/snekbot_ws
-
-
-. $HOME/esp/esp-idf/export.sh
 
 idf.py set-target esp32
 idf.py menuconfig
