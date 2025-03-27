@@ -132,4 +132,16 @@ python3 -m venv venv
 source venv/bin/activate
 ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0
 
+
+
+
 git clone https://github.com/JOvers26/SnekBot ~/snekbot_ws
+
+
+. $HOME/esp/esp-idf/export.sh
+
+idf.py set-target esp32
+idf.py menuconfig
+idf.py -p /dev/ttyACM0 flash
+idf.py build
+ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
