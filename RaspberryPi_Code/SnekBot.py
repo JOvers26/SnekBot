@@ -14,7 +14,7 @@ import time
 import threading
 
 class SnekBot(ERobot):
-    def __init__(self, urdf_filename="SnekBot_Config/SnekBot.urdf"):
+    def __init__(self, urdf_filename="SnekBot_URDF/SnekBot.urdf"):
         urdf_path = self.get_urdf_path(urdf_filename)
         print(urdf_path)
         if not urdf_path.exists():
