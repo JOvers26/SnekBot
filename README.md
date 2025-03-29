@@ -78,7 +78,7 @@ For more details, visit the [official ROS 2 documentation](https://docs.ros.org/
 ### **1. Clone the repository**
 ```sh
 git clone https://github.com/JOvers26/SnekBot
-cd ~/Snekbot
+cd ~/SnekBot
 ```
 
 ### **2. Install dependencies**
@@ -97,6 +97,7 @@ sudo apt install ros-$ROS_DISTRO-foxglove-bridge
 
 ### **4. Build the ROS2 Workspace:**
 ```sh
+cd /ros2_ws
 colcon build --symlink-install
 source install/setup.bash
 ```
@@ -109,21 +110,20 @@ sudo apt-get install git wget flex bison gperf python3 python3-pip python3-venv 
 
 ### **2. Get ESP-IDF**
 ```sh
-cd ~/Snekbot
 mkdir -p ~/esp
 cd ~/esp
-git clone -b v5.2.5 --recursive https://github.com/espressif/esp-idf.git
+git clone -b v5.4.1 --recursive https://github.com/espressif/esp-idf.git
 ```
 
 ### **3. Set up the Tools**
 ```sh
-cd ~/Snekbot/esp/esp-idf
+cd ~/esp/esp-idf
 ./install.sh esp32s3
 ```
 
 ### **4. Set up the Environment Variables**
 ```sh
-. $HOME/Snekbot/esp/esp-idf/export.sh
+. $HOME/esp/esp-idf/export.sh
 ```
 
 ### **4. micro-ROS component for ESP-IDF**
