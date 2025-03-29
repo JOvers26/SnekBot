@@ -78,7 +78,7 @@ For more details, visit the [official ROS 2 documentation](https://docs.ros.org/
 ### **1. Clone the repository**
 ```sh
 git clone https://github.com/JOvers26/SnekBot
-cd ~/Snekbot
+cd ~/SnekBot
 ```
 
 ### **2. Install dependencies**
@@ -97,6 +97,7 @@ sudo apt install ros-$ROS_DISTRO-foxglove-bridge
 
 ### **4. Build the ROS2 Workspace:**
 ```sh
+cd /ros2_ws
 colcon build --symlink-install
 source install/setup.bash
 ```
