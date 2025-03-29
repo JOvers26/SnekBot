@@ -101,42 +101,39 @@ colcon build --symlink-install
 source install/setup.bash
 ```
 
-### **5. Install and activate virtual ennvirnoment**
-```sh
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### **5. Install Robotics Toolbox**
-```sh
-pip3 install pygame
-pip3 install setuptools
-pip3 install roboticstoolbox-python
-pip3 install "numpy<2"
-```
-
 ## Setting up ESP-IDF
-### **1. Install Packages**
+### **1. Install Prerequisites**
 ```sh
 sudo apt-get install git wget flex bison gperf python3 python3-pip python3-venv cmake ninja-build ccache libffi-dev libssl-dev dfu-util libusb-1.0-0
+```
 
+### **2. Get ESP-IDF**
+```sh
+cd ~/Snekbot
 mkdir -p ~/esp
 cd ~/esp
 git clone -b v5.2.5 --recursive https://github.com/espressif/esp-idf.git
-
-
 ```
 
-### **2. Set up the Tools**
+### **3. Set up the Tools**
 ```sh
-cd ~/SnekBot/esp-idf-master
-chmod -R +x ~Snekbot/esp-idf-master
-./install.sh all
+cd ~/Snekbot/esp/esp-idf
+./install.sh esp32s3
 ```
 
-### **3. Set up the Environment Variables**
+### **4. Set up the Environment Variables**
 ```sh
-. $HOME/Snekbot/esp-idf-master/export.sh
+. $HOME/Snekbot/esp/esp-idf/export.sh
+```
+
+### **4. micro-ROS component for ESP-IDF**
+```sh
+pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
+```
+
+
+
+
 pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
 
 # in micro_ros settings set WIFI and Password ssh
@@ -144,7 +141,7 @@ cd ~/SnekBot/esp-idf-master/components/micro_ros_espidf_components-jazzy/example
 idf.py set-target esp32s3
 idf.py menuconfig
 
-```
+
 
 
 ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0
@@ -158,3 +155,18 @@ idf.py build
 ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
 sudo apt install python3-venv
 mkdir snekbot_ws
+
+
+### **5. Install and activate virtual ennvirnoment**
+```sh
+python3 -m venv venv
+source venv/bin/activate
+```
+
+### **5. Install Robotics Toolbox**
+```sh
+pip3 install pygame
+pip3 install setuptools
+pip3 install roboticstoolbox-python
+pip3 install "numpy<2"
+```
