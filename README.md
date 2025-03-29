@@ -1,6 +1,6 @@
 # SnekBot
 
-![SnekBot Arm](images/snekbot_arm.png)
+![SnekBot Arm](images/SnekBot.png)
 
 ## Six-Axis Robotic Arm and Control System for ROAR Lunar Surface Operations
 This project is a work in progress and setup is subject to change.
