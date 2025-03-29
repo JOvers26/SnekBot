@@ -97,7 +97,7 @@ sudo apt install ros-$ROS_DISTRO-foxglove-bridge
 
 ### **4. Build the ROS2 Workspace:**
 ```sh
-cd /ros2_ws
+cd ~SnekBot/ros2_ws
 colcon build --symlink-install
 source install/setup.bash
 ```
@@ -126,13 +126,31 @@ cd ~/esp/esp-idf
 . $HOME/esp/esp-idf/export.sh
 ```
 
-### **4. Configure esp32s3**
+### **5. Configure esp32s3**
 ```sh
-go to the fucking thing
+cd ~SnekBot/ESP32_Code/int32_Publisher
 idf.py set-target esp32s3
 idf.py menuconfig
 ```
 
+### **5. assign privilages to serial conneciton**
+```sh
+idf.py build
+idf.py -p /dev/ttyACM0 flash
+```
+
+### **5. build and flash**
+```sh
+idf.py build
+idf.py -p /dev/ttyACM0 flash
+```
+
+In micro-ROS Settings ->
+micro-ROS AgentIP = ip address of raspberry pi (or other ROS2 Agent)
+
+Configure wifi details n shit
+
+s to save
 
 
 
