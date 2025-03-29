@@ -126,6 +126,17 @@ cd ~/esp/esp-idf
 . $HOME/esp/esp-idf/export.sh
 ```
 
+### **4. Configure esp32s3**
+```sh
+go to the fucking thing
+idf.py set-target esp32s3
+idf.py menuconfig
+```
+
+
+
+
+
 ### **4. micro-ROS component for ESP-IDF**
 ```sh
 pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
