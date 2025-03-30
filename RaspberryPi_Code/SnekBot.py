@@ -10,6 +10,7 @@ from spatialmath import *
 import swift
 import time
 import threading
+import json  # Import json module to format the data
 
 class SnekBot(ERobot):
     def __init__(self, urdf_filename="SnekBot_URDF/SnekBot.urdf"):
@@ -101,12 +102,19 @@ class SnekBot(ERobot):
             self.control_thread.join()
 
     def publish_snekbot_data(self, gripper_theta=None):
-        # Format joint states and gripper data as a string
-        joint_data = ', '.join(map(str, self.q))  # Join joint positions as string
-        gripper_data = str(gripper_theta) if gripper_theta is not None else 'None'
-        
-        # Prepare the message string
-        data_str = f"Joint 1: {self.q[0]}, Joint 2: {self.q[1]}, Joint 3: {self.q[2]}, Joint 4: {self.q[3]}, Joint 5: {self.q[4]}, Joint 6: {self.q[5]}, Gripper: {gripper_data}"
+        # Format joint states and gripper data into a JSON-like structure
+        joint_data = {
+            'joint_1': self.q[0],
+            'joint_2': self.q[1],
+            'joint_3': self.q[2],
+            'joint_4': self.q[3],
+            'joint_5': self.q[4],
+            'joint_6': self.q[5],
+            'gripper': gripper_theta if gripper_theta is not None else None
+        }
+
+        # Convert the dictionary to a JSON string
+        data_str = json.dumps(joint_data)
         
         # Create the String message and publish
         msg = String()
