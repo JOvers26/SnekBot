@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float64, String  # Import String instead of JointState
+from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
 import numpy as np
 import roboticstoolbox as rtb
@@ -41,7 +41,7 @@ class SnekBot(ERobot):
         self.node = Node('snekbot_node')
         
         # Create publishers
-        self.joint_state_pub = self.node.create_publisher(String, 'snekbot/joint_states', 10)  # Use String instead of JointState
+        self.joint_state_pub = self.node.create_publisher(JointState, 'snekbot/joint_states', 10)
         self.gripper_pub = self.node.create_publisher(Float64, 'snekbot/gripper_position', 10)
 
     @staticmethod
@@ -60,7 +60,7 @@ class SnekBot(ERobot):
         qt = rtb.jtraj(start, end, steps)
         for q in qt.q:
             self.q = q
-            self.publish_joint_state()  # Publish joint states as string messages here
+            self.publish_joint_state()  # Publish joint states here
             # self.env.step(0.01)
         self.set_position()
 
@@ -87,8 +87,8 @@ class SnekBot(ERobot):
             arrived = False
             while not arrived:
                 print(self.q)  # Send joint data here
-                self.publish_joint_state()  # Publish joint states as string messages
-                if not np.array_equal(self.target_position, np.array([x, y, z, R, P, Y])):  # If target position changed
+                self.publish_joint_state()  # Publish joint states
+                if not np.array_equal(self.target_position, np.array([x, y, z, R, P, Y])):
                     break
 
                 v, arrived = rtb.p_servo(self.fkine(self.q), end_effector_position, gain=5, threshold=0.01)
@@ -99,15 +99,21 @@ class SnekBot(ERobot):
             if arrived:
                 self.target_position = None
 
+    def move_grippers(self, theta):
+        print(theta)  # Send gripper data here
+        self.publish_gripper_state(theta)  # Publish gripper position
+
     def stop_movement(self):
         self.running = False
         if self.control_thread:
             self.control_thread.join()
 
     def publish_joint_state(self):
-        # Publish joint states as a string message
-        joint_state_msg = String()  # Create String message instead of JointState
-        joint_state_msg.data = 'Joint Angles: ' + ', '.join([f'{angle:.3f}' for angle in self.q.tolist()])
+        # Publish joint states
+        joint_state_msg = JointState()
+        joint_state_msg.header.stamp = rclpy.time.Time().to_msg()
+        joint_state_msg.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']  # Modify these names as needed
+        joint_state_msg.position = self.q.tolist()
         self.joint_state_pub.publish(joint_state_msg)
 
     def publish_gripper_state(self, theta):
@@ -115,10 +121,6 @@ class SnekBot(ERobot):
         gripper_msg = Float64()
         gripper_msg.data = theta
         self.gripper_pub.publish(gripper_msg)
-
-    def move_grippers(self, theta):
-        print(theta)  # Send gripper data here
-        self.publish_gripper_state(theta)  # Publish gripper position
 
 def main():
     # Example of creating a robot and controlling it
