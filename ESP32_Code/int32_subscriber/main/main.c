@@ -36,11 +36,7 @@ void gripper_subscription_callback(const void * msgin)
 void joint_states_subscription_callback(const void * msgin)
 {
     const std_msgs__msg__Float64MultiArray * msg = (const std_msgs__msg__Float64MultiArray *)msgin;
-    printf("Received joint states: ");
-    for (size_t i = 0; i < msg->data.size; i++) {
-        printf("%.6f ", msg->data.data[i]);
-    }
-    printf("\n");
+    printf("Received joint states: %s\n", (char*)msg->data.data);
 }
 
 void micro_ros_task(void * arg)
