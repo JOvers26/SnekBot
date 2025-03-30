@@ -60,7 +60,7 @@ void micro_ros_task(void * arg)
 
     while (1) {
         rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
-        usleep(100000);
+        usleep(10000);
     }
 
     RCCHECK(rcl_subscription_fini(&subscriber, &node));
