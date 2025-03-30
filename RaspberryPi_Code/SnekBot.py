@@ -42,6 +42,7 @@ class SnekBot(ERobot):
         
         # Create publishers
         self.joint_state_pub = self.node.create_publisher(JointState, 'snekbot/joint_states', 10)
+        self.gripper_pub = self.node.create_publisher(Float64, 'snekbot/gripper_position', 10)
 
     @staticmethod
     def get_urdf_path(urdf_filename):
@@ -99,9 +100,8 @@ class SnekBot(ERobot):
                 self.target_position = None
 
     def move_grippers(self, theta):
-        print(f"Moving gripper to {theta}")  # Print the desired gripper position
-        self.current_gripper_position = theta  # Update gripper position
-        self.publish_joint_state()  # Immediately publish the new gripper position
+        print(theta)  # Send gripper data here
+        self.publish_gripper_state(theta)  # Publish gripper position
 
     def stop_movement(self):
         self.running = False
@@ -109,23 +109,24 @@ class SnekBot(ERobot):
             self.control_thread.join()
 
     def publish_joint_state(self):
-        # Publish joint states along with gripper position
+        # Publish joint states
         joint_state_msg = JointState()
         joint_state_msg.header.stamp = rclpy.time.Time().to_msg()
-        joint_state_msg.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6', 'gripper']  # Add gripper to the list
-        joint_state_msg.position = self.q.tolist() + [self.current_gripper_position]  # Append gripper position to the list
-        print(joint_state_msg)
+        joint_state_msg.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']  # Modify these names as needed
+        joint_state_msg.position = self.q.tolist()
         self.joint_state_pub.publish(joint_state_msg)
+
+    def publish_gripper_state(self, theta):
+        # Publish gripper position
+        gripper_msg = Float64()
+        gripper_msg.data = theta
+        self.gripper_pub.publish(gripper_msg)
 
 def main():
     # Example of creating a robot and controlling it
     snekbot = SnekBot()
     snekbot.move_to_joint_position(snekbot.configs["init"], snekbot.configs["stance"], 50)
-    
-    # Example of moving the gripper independently
-    snekbot.move_grippers(0.5)  # Move gripper to position 0.5 immediately
-    snekbot.move_grippers(1.0)  # Move gripper to position 1.0 immediately
-    
+    snekbot.move_grippers(0.5)  # Example gripper position
     snekbot.stop_movement()
 
 if __name__ == '__main__':
