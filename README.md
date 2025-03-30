@@ -83,7 +83,7 @@ cd ~/SnekBot
 
 ### **2. Install dependencies**
 ```sh
-cd /ros2_ws
+cd ~/SnekBot/ros2_ws
 sudo rosdep init
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y
@@ -129,6 +129,7 @@ cd ~/esp/esp-idf
 ### **5. Configure esp32s3**
 ```sh
 cd ~SnekBot/ESP32_Code/int32_Publisher
+pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
 idf.py set-target esp32s3
 idf.py menuconfig
 ```
@@ -143,7 +144,7 @@ idf.py -p /dev/ttyACM0 flash
 ```sh
 idf.py build
 
-Add your user to the dialout group 
+#Add  user to the dialout group 
 sudo usermod -aG dialout $USER
 
 idf.py -p /dev/ttyACM0 flash
@@ -153,7 +154,6 @@ In micro-ROS Settings ->
 micro-ROS AgentIP = ip address of raspberry pi (or other ROS2 Agent)
 
 Configure wifi details n shit
-
 s to save
 
 
@@ -165,9 +165,37 @@ pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
 ```
 
 
+## Useful Commands
+### **Sourcing Ros2**
+```sh
+source /opt/ros/jazzy/setup.bash
+```
+
+### **Building micro-ROS-Agent**
+```sh
+cd ~SnekBot/ros2_ws
+colcon build --symlink-install
+source install/setup.bash
+```
+```sh
+ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
+```
+
+### **Launching Foxglove Monitoring**
+```sh
+source /opt/ros/jazzy/setup.bash
+ros2 run foxglove_bridge foxglove_bridge
+```
+
+### **Flashing and Monitoring ESP32-S3**
+```sh
+idf.py -p /dev/ttyACM0 flash
+idf.py -p /dev/ttyACM0 monitor
+```
 
 
-pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
+
+
 
 # in micro_ros settings set WIFI and Password ssh
 cd ~/SnekBot/esp-idf-master/components/micro_ros_espidf_components-jazzy/examples/int32_publisher
