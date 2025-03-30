@@ -1,6 +1,6 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import String  # Import String message type
+from std_msgs.msg import String  # Using String message type
 import numpy as np
 import roboticstoolbox as rtb
 from roboticstoolbox.robot.ERobot import ERobot
@@ -38,7 +38,7 @@ class SnekBot(ERobot):
         rclpy.init()
         self.node = Node('snekbot_node')
         
-        # Create publisher
+        # Create a single publisher for the joint states and gripper position
         self.snekbot_data_pub = self.node.create_publisher(String, 'snekbot/data', 10)
 
     @staticmethod
@@ -81,7 +81,7 @@ class SnekBot(ERobot):
             arrived = False
             while not arrived:
                 self.publish_snekbot_data()  # Publish data here
-                if not np.array_equal(self.target_position, np.array([x, y, z, R, P, Y])): 
+                if not np.array_equal(self.target_position, np.array([x, y, z, R, P, Y])):
                     break
 
                 v, arrived = rtb.p_servo(self.fkine(self.q), end_effector_position, gain=5, threshold=0.01)
