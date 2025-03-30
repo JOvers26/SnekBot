@@ -112,13 +112,13 @@ sudo apt-get install git wget flex bison gperf python3 python3-pip python3-venv 
 ```sh
 mkdir -p ~/esp
 cd ~/esp
-git clone -b v5.4.1 --recursive https://github.com/espressif/esp-idf.git
+git clone -b v5.2.5 --recursive https://github.com/espressif/esp-idf.git
 ```
 
 ### **3. Set up the Tools**
 ```sh
 cd ~/esp/esp-idf
-./install.sh esp32s3
+./install.sh all
 ```
 
 ### **4. Set up the Environment Variables**
@@ -142,6 +142,10 @@ idf.py -p /dev/ttyACM0 flash
 ### **5. build and flash**
 ```sh
 idf.py build
+
+Add your user to the dialout group 
+sudo usermod -aG dialout $USER
+
 idf.py -p /dev/ttyACM0 flash
 ```
 
