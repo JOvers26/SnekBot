@@ -10,7 +10,7 @@
 #include <uros_network_interfaces.h>
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
-#include <std_msgs/msg/string.h>
+#include <sensor_msgs/msg/joint_state.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 
@@ -21,13 +21,18 @@
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
-rcl_subscription_t subscriber;
-std_msgs__msg__String recv_msg;
+// Joint State Subscriber
+rcl_subscription_t joint_state_subscriber;
+sensor_msgs__msg__JointState recv_joint_state;
 
-void subscription_callback(const void * msgin)
+void joint_state_callback(const void * msgin)
 {
-    const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
-    printf("Received: %s\n", msg->data.data);
+    const sensor_msgs__msg__JointState * msg = (const sensor_msgs__msg__JointState *)msgin;
+    
+    printf("Received Joint State:\n");
+    for (size_t i = 0; i < msg->position.size; i++) {
+        printf(" - %s: %f\n", msg->name.data[i].data, msg->position.data[i]);
+    }
 }
 
 void micro_ros_task(void * arg)
@@ -35,7 +40,7 @@ void micro_ros_task(void * arg)
     rcl_allocator_t allocator = rcl_get_default_allocator();
     rclc_support_t support;
 
-    // Create init_options
+    // Initialize ROS 2
     rcl_init_options_t init_options = rcl_get_zero_initialized_init_options();
     RCCHECK(rcl_init_options_init(&init_options, allocator));
 
@@ -49,13 +54,13 @@ void micro_ros_task(void * arg)
 
     // Create node
     rcl_node_t node = rcl_get_zero_initialized_node();
-    RCCHECK(rclc_node_init_default(&node, "snekbot_subscriber", "", &support));
+    RCCHECK(rclc_node_init_default(&node, "snekbot_joint_state_subscriber", "", &support));
 
-    // Create subscriber
+    // Create subscriber for JointState
     RCCHECK(rclc_subscription_init_default(
-        &subscriber,
+        &joint_state_subscriber,
         &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
+        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState),
         "snekbot/joint_states"));
 
     // Create executor
@@ -63,7 +68,7 @@ void micro_ros_task(void * arg)
     RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
 
     // Add subscriber to executor
-    RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &recv_msg, &subscription_callback, ON_NEW_DATA));
+    RCCHECK(rclc_executor_add_subscription(&executor, &joint_state_subscriber, &recv_joint_state, &joint_state_callback, ON_NEW_DATA));
 
     // Spin forever
     while(1){
@@ -72,7 +77,7 @@ void micro_ros_task(void * arg)
     }
 
     // Free resources
-    RCCHECK(rcl_subscription_fini(&subscriber, &node));
+    RCCHECK(rcl_subscription_fini(&joint_state_subscriber, &node));
     RCCHECK(rcl_node_fini(&node));
 
     vTaskDelete(NULL);
