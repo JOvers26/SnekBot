@@ -126,44 +126,41 @@ cd ~/esp/esp-idf
 . $HOME/esp/esp-idf/export.sh
 ```
 
-### **5. Configure esp32s3**
+### **5. Configure ESP32S3**
 ```sh
 cd ~SnekBot/ESP32_Code/int32_Publisher
 pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
 idf.py set-target esp32s3
 idf.py menuconfig
+
+#In micro-ROS Settings ->
+  #Set micro-ROS-Agent IP
+  #Set WiFi Credentials
 ```
 
-### **5. assign privilages to serial conneciton**
+### **6. Build and flash software**
 ```sh
 idf.py build
 idf.py -p /dev/ttyACM0 flash
-```
 
-### **5. build and flash**
-```sh
-idf.py build
-
-#Add  user to the dialout group 
+# Note if this does not work you may need to add user to the dialout group
 sudo usermod -aG dialout $USER
 
 idf.py -p /dev/ttyACM0 flash
 ```
 
-In micro-ROS Settings ->
-micro-ROS AgentIP = ip address of raspberry pi (or other ROS2 Agent)
-
-Configure wifi details n shit
-s to save
-
-
-
-
-### **4. micro-ROS component for ESP-IDF**
+## Install VSCode on Ubuntu
+### **1. Install Prerequisites**
 ```sh
-pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
+sudo apt-get install wget gpg
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" |sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
+rm -f packages.microsoft.gpg
+sudo apt install apt-transport-https
+sudo apt update
+sudo apt install code # or code-insiders
 ```
-
 
 ## Useful Commands
 ### **Sourcing Ros2**
@@ -187,11 +184,18 @@ source /opt/ros/jazzy/setup.bash
 ros2 run foxglove_bridge foxglove_bridge
 ```
 
+### **Sourcing ESP-IDF**
+```sh
+. $HOME/esp/esp-idf/export.sh
+```
+
 ### **Flashing and Monitoring ESP32-S3**
 ```sh
 idf.py -p /dev/ttyACM0 flash
 idf.py -p /dev/ttyACM0 monitor
 ```
+
+
 
 
 
