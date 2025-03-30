@@ -11,6 +11,7 @@
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
 #include <std_msgs/msg/float64.h>
+#include <std_msgs/msg/float64_multi_array.h>
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 
@@ -21,13 +22,25 @@
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);}}
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);}}
 
-rcl_subscription_t subscriber;
-std_msgs__msg__Float64 recv_msg;
+rcl_subscription_t gripper_subscriber;
+rcl_subscription_t joint_states_subscriber;
+std_msgs__msg__Float64 recv_gripper_msg;
+std_msgs__msg__Float64MultiArray recv_joint_states_msg;
 
-void subscription_callback(const void * msgin)
+void gripper_subscription_callback(const void * msgin)
 {
     const std_msgs__msg__Float64 * msg = (const std_msgs__msg__Float64 *)msgin;
     printf("Received gripper position: %.2f\n", msg->data);
+}
+
+void joint_states_subscription_callback(const void * msgin)
+{
+    const std_msgs__msg__Float64MultiArray * msg = (const std_msgs__msg__Float64MultiArray *)msgin;
+    printf("Received joint states: ");
+    for (size_t i = 0; i < msg->data.size; i++) {
+        printf("%.6f ", msg->data.data[i]);
+    }
+    printf("\n");
 }
 
 void micro_ros_task(void * arg)
@@ -46,24 +59,32 @@ void micro_ros_task(void * arg)
     RCCHECK(rclc_support_init_with_options(&support, 0, NULL, &init_options, &allocator));
 
     rcl_node_t node = rcl_get_zero_initialized_node();
-    RCCHECK(rclc_node_init_default(&node, "gripper_subscriber_rclc", "", &support));
+    RCCHECK(rclc_node_init_default(&node, "gripper_joint_states_subscriber_rclc", "", &support));
 
     RCCHECK(rclc_subscription_init_default(
-        &subscriber,
+        &gripper_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float64),
         "snekbot/gripper_position"));
 
+    RCCHECK(rclc_subscription_init_default(
+        &joint_states_subscriber,
+        &node,
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float64MultiArray),
+        "snekbot/joint_states"));
+
     rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
-    RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
-    RCCHECK(rclc_executor_add_subscription(&executor, &subscriber, &recv_msg, &subscription_callback, ON_NEW_DATA));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
+    RCCHECK(rclc_executor_add_subscription(&executor, &gripper_subscriber, &recv_gripper_msg, &gripper_subscription_callback, ON_NEW_DATA));
+    RCCHECK(rclc_executor_add_subscription(&executor, &joint_states_subscriber, &recv_joint_states_msg, &joint_states_subscription_callback, ON_NEW_DATA));
 
     while (1) {
-        rclc_executor_spin_some(&executor, RCL_MS_TO_NS(100));
+        rclc_executor_spin_some(&executor, RCL_MS_TO_NS(10));
         usleep(10000);
     }
 
-    RCCHECK(rcl_subscription_fini(&subscriber, &node));
+    RCCHECK(rcl_subscription_fini(&gripper_subscriber, &node));
+    RCCHECK(rcl_subscription_fini(&joint_states_subscriber, &node));
     RCCHECK(rcl_node_fini(&node));
 
     vTaskDelete(NULL);
