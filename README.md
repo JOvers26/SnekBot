@@ -162,6 +162,20 @@ sudo apt update
 sudo apt install code # or code-insiders
 ```
 
+## Setting up Robotics Toolbox Python environment
+### **1. Install Prerequisites**
+```sh
+sudo apt install python3-venv
+cd ~SnekBot
+python3 -m venv venv
+source venv/bin/activate
+
+pip3 install pygame
+pip3 install setuptools
+pip3 install roboticstoolbox-python
+pip3 install "numpy<2"
+```
+
 ## Useful Commands
 ### **Sourcing Ros2**
 ```sh
@@ -193,45 +207,4 @@ ros2 run foxglove_bridge foxglove_bridge
 ```sh
 idf.py -p /dev/ttyACM0 flash
 idf.py -p /dev/ttyACM0 monitor
-```
-
-
-
-
-
-
-
-# in micro_ros settings set WIFI and Password ssh
-cd ~/SnekBot/esp-idf-master/components/micro_ros_espidf_components-jazzy/examples/int32_publisher
-idf.py set-target esp32s3
-idf.py menuconfig
-
-
-
-
-ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0
-
-
-
-idf.py set-target esp32
-idf.py menuconfig
-idf.py -p /dev/ttyACM0 flash
-idf.py build
-ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
-sudo apt install python3-venv
-mkdir snekbot_ws
-
-
-### **5. Install and activate virtual ennvirnoment**
-```sh
-python3 -m venv venv
-source venv/bin/activate
-```
-
-### **5. Install Robotics Toolbox**
-```sh
-pip3 install pygame
-pip3 install setuptools
-pip3 install roboticstoolbox-python
-pip3 install "numpy<2"
 ```
