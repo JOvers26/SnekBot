@@ -19,56 +19,60 @@
 #include <rmw_microros/rmw_microros.h>
 #endif
 
-#include <cjson/cJSON.h>  // Include cJSON library for JSON parsing
-
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);} }
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);} }
 
 rcl_subscription_t snekbot_data_subscriber;
 std_msgs__msg__String recv_snekbot_data_msg;  // String message type for receiving JSON data
 
+// Utility function to extract a float value from a key-value pair in the JSON string
+float extract_float_value(const char *json_str, const char *key) {
+    char *key_pos = strstr(json_str, key);
+    if (!key_pos) return 0.0f;
+
+    // Find the position of the colon (:) after the key
+    char *colon_pos = strchr(key_pos, ':');
+    if (!colon_pos) return 0.0f;
+
+    // Find the position of the next comma (,) or closing brace (})
+    char *comma_pos = strchr(colon_pos, ',');
+    char *brace_pos = strchr(colon_pos, '}');
+    if (!comma_pos && !brace_pos) return 0.0f;
+    char *end_pos = (comma_pos && brace_pos) ? (comma_pos < brace_pos ? comma_pos : brace_pos) : (comma_pos ? comma_pos : brace_pos);
+
+    // Extract the value between the colon and the end position
+    char value_str[64] = {0};
+    strncpy(value_str, colon_pos + 1, end_pos - colon_pos - 1);
+
+    return strtof(value_str, NULL);
+}
+
 // Subscription callback function for receiving the JSON data
 void snekbot_data_subscription_callback(const void * msgin)
 {
     const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
-    
-    // Parse the JSON string
-    cJSON *json = cJSON_Parse(msg->data.data);
-    if (json == NULL) {
-        printf("Error parsing JSON\n");
-        return;
-    }
+    const char *json_str = msg->data.data;  // JSON string received from the ROS 2 topic
 
-    // Extract joint states
-    cJSON *joint_1 = cJSON_GetObjectItem(json, "joint_1");
-    cJSON *joint_2 = cJSON_GetObjectItem(json, "joint_2");
-    cJSON *joint_3 = cJSON_GetObjectItem(json, "joint_3");
-    cJSON *joint_4 = cJSON_GetObjectItem(json, "joint_4");
-    cJSON *joint_5 = cJSON_GetObjectItem(json, "joint_5");
-    cJSON *joint_6 = cJSON_GetObjectItem(json, "joint_6");
+    // Extract joint positions
+    float joint_1 = extract_float_value(json_str, "joint_1");
+    float joint_2 = extract_float_value(json_str, "joint_2");
+    float joint_3 = extract_float_value(json_str, "joint_3");
+    float joint_4 = extract_float_value(json_str, "joint_4");
+    float joint_5 = extract_float_value(json_str, "joint_5");
+    float joint_6 = extract_float_value(json_str, "joint_6");
 
     // Extract gripper position
-    cJSON *gripper = cJSON_GetObjectItem(json, "gripper");
+    float gripper = extract_float_value(json_str, "gripper");
 
-    // Print the data
-    if (joint_1 && joint_2 && joint_3 && joint_4 && joint_5 && joint_6) {
-        printf("Received joint states:\n");
-        printf("Joint 1 position: %.2f\n", joint_1->valuedouble);
-        printf("Joint 2 position: %.2f\n", joint_2->valuedouble);
-        printf("Joint 3 position: %.2f\n", joint_3->valuedouble);
-        printf("Joint 4 position: %.2f\n", joint_4->valuedouble);
-        printf("Joint 5 position: %.2f\n", joint_5->valuedouble);
-        printf("Joint 6 position: %.2f\n", joint_6->valuedouble);
-    }
-
-    if (gripper) {
-        printf("Gripper position: %.2f\n", gripper->valuedouble);
-    } else {
-        printf("Gripper position: None\n");
-    }
-
-    // Clean up JSON object
-    cJSON_Delete(json);
+    // Print the extracted data
+    printf("Received joint states:\n");
+    printf("Joint 1 position: %.2f\n", joint_1);
+    printf("Joint 2 position: %.2f\n", joint_2);
+    printf("Joint 3 position: %.2f\n", joint_3);
+    printf("Joint 4 position: %.2f\n", joint_4);
+    printf("Joint 5 position: %.2f\n", joint_5);
+    printf("Joint 6 position: %.2f\n", joint_6);
+    printf("Gripper position: %.2f\n", gripper);
 }
 
 // Micro-ROS task to handle subscriptions and execution loop
