@@ -1,14 +1,12 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float64
-from snekbot_interfaces.msg import SnekBotData  # Custom message
+from std_msgs.msg import String  # Import String message type
 import numpy as np
 import roboticstoolbox as rtb
 from roboticstoolbox.robot.ERobot import ERobot
 from roboticstoolbox.backends.swift import Swift
 from pathlib import Path
 from spatialmath import *
-import spatialgeometry as sg
 import swift
 import time
 import threading
@@ -40,8 +38,8 @@ class SnekBot(ERobot):
         rclpy.init()
         self.node = Node('snekbot_node')
         
-        # Create a single publisher for snekbot/data
-        self.data_pub = self.node.create_publisher(SnekBotData, 'snekbot/data', 10)
+        # Create publisher
+        self.snekbot_data_pub = self.node.create_publisher(String, 'snekbot/data', 10)
 
     @staticmethod
     def get_urdf_path(urdf_filename):
@@ -52,15 +50,12 @@ class SnekBot(ERobot):
     
     def set_position(self):
         self.current_position = self.fkine(self.q)
-        # origin_axes = sg.Axes(length=0.1, pose=self.current_position)
-        # self.env.add(origin_axes)
 
     def move_to_joint_position(self, start, end, steps):
         qt = rtb.jtraj(start, end, steps)
         for q in qt.q:
             self.q = q
-            self.publish_data()  # Publish joint states and gripper data here
-            # self.env.step(0.01)
+            self.publish_snekbot_data()  # Publish data here
         self.set_position()
 
     def set_target_position(self, new_position):
@@ -85,9 +80,8 @@ class SnekBot(ERobot):
 
             arrived = False
             while not arrived:
-                print(self.q)  # Send joint data here
-                self.publish_data()  # Publish joint states and gripper data
-                if not np.array_equal(self.target_position, np.array([x, y, z, R, P, Y])):  
+                self.publish_snekbot_data()  # Publish data here
+                if not np.array_equal(self.target_position, np.array([x, y, z, R, P, Y])): 
                     break
 
                 v, arrived = rtb.p_servo(self.fkine(self.q), end_effector_position, gain=5, threshold=0.01)
@@ -99,31 +93,25 @@ class SnekBot(ERobot):
                 self.target_position = None
 
     def move_grippers(self, theta):
-        print(theta)  # Send gripper data here
-        self.publish_data(theta)  # Publish gripper position
+        self.publish_snekbot_data(gripper_theta=theta)  # Publish data here
 
     def stop_movement(self):
         self.running = False
         if self.control_thread:
             self.control_thread.join()
 
-    def publish_data(self, gripper_theta=None):
-        # Publish joint states and gripper data in a single message
-        data_msg = SnekBotData()
-        data_msg.joint_1 = self.q[0]
-        data_msg.joint_2 = self.q[1]
-        data_msg.joint_3 = self.q[2]
-        data_msg.joint_4 = self.q[3]
-        data_msg.joint_5 = self.q[4]
-        data_msg.joint_6 = self.q[5]
+    def publish_snekbot_data(self, gripper_theta=None):
+        # Format joint states and gripper data as a string
+        joint_data = ', '.join(map(str, self.q))  # Join joint positions as string
+        gripper_data = str(gripper_theta) if gripper_theta is not None else 'None'
         
-        # If gripper theta is provided, update the gripper position
-        if gripper_theta is not None:
-            data_msg.gripper = gripper_theta
-        else:
-            data_msg.gripper = 0.0  # Default gripper position
-
-        self.data_pub.publish(data_msg)
+        # Prepare the message string
+        data_str = f"Joint 1: {self.q[0]}, Joint 2: {self.q[1]}, Joint 3: {self.q[2]}, Joint 4: {self.q[3]}, Joint 5: {self.q[4]}, Joint 6: {self.q[5]}, Gripper: {gripper_data}"
+        
+        # Create the String message and publish
+        msg = String()
+        msg.data = data_str
+        self.snekbot_data_pub.publish(msg)
 
 def main():
     # Example of creating a robot and controlling it
