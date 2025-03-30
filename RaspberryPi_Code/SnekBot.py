@@ -41,7 +41,7 @@ class SnekBot(ERobot):
         self.node = Node('snekbot_node')
         
         # Create publishers
-        self.joint_state_pub = self.node.create_publisher(JointState, 'snekbot/joint_states', 10)
+        self.joint_state_pub = self.node.create_publisher(JointState, 'snekbot/test_joint_states', 10)
         self.gripper_pub = self.node.create_publisher(Float64, 'snekbot/gripper_position', 10)
 
     @staticmethod
