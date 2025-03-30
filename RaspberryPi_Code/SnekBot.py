@@ -1,6 +1,7 @@
 import rclpy
 from rclpy.node import Node
 from std_msgs.msg import Float64, String  # Import String instead of JointState
+from sensor_msgs.msg import JointState
 import numpy as np
 import roboticstoolbox as rtb
 from roboticstoolbox.robot.ERobot import ERobot
@@ -59,7 +60,7 @@ class SnekBot(ERobot):
         qt = rtb.jtraj(start, end, steps)
         for q in qt.q:
             self.q = q
-            self.publish_joint_state()  # Publish joint states as a string message here
+            self.publish_joint_state()  # Publish joint states as string messages here
             # self.env.step(0.01)
         self.set_position()
 
@@ -115,10 +116,15 @@ class SnekBot(ERobot):
         gripper_msg.data = theta
         self.gripper_pub.publish(gripper_msg)
 
+    def move_grippers(self, theta):
+        print(theta)  # Send gripper data here
+        self.publish_gripper_state(theta)  # Publish gripper position
+
 def main():
     # Example of creating a robot and controlling it
     snekbot = SnekBot()
     snekbot.move_to_joint_position(snekbot.configs["init"], snekbot.configs["stance"], 50)
+    snekbot.move_grippers(0.5)  # Example gripper position
     snekbot.stop_movement()
 
 if __name__ == '__main__':
