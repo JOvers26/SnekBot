@@ -83,7 +83,7 @@ cd ~/SnekBot
 
 ### **2. Install dependencies**
 ```sh
-cd /ros2_ws
+cd ~/SnekBot/ros2_ws
 sudo rosdep init
 rosdep update
 rosdep install --from-paths src --ignore-src -r -y
@@ -126,80 +126,85 @@ cd ~/esp/esp-idf
 . $HOME/esp/esp-idf/export.sh
 ```
 
-### **5. Configure esp32s3**
+### **5. Configure ESP32S3**
 ```sh
 cd ~SnekBot/ESP32_Code/int32_Publisher
+pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
 idf.py set-target esp32s3
 idf.py menuconfig
+
+#In micro-ROS Settings ->
+  #Set micro-ROS-Agent IP
+  #Set WiFi Credentials
 ```
 
-### **5. assign privilages to serial conneciton**
+### **6. Build and flash software**
 ```sh
 idf.py build
 idf.py -p /dev/ttyACM0 flash
-```
 
-### **5. build and flash**
-```sh
-idf.py build
-
-Add your user to the dialout group 
+# Note if this does not work you may need to add user to the dialout group
 sudo usermod -aG dialout $USER
 
 idf.py -p /dev/ttyACM0 flash
 ```
 
-In micro-ROS Settings ->
-micro-ROS AgentIP = ip address of raspberry pi (or other ROS2 Agent)
-
-Configure wifi details n shit
-
-s to save
-
-
-
-
-### **4. micro-ROS component for ESP-IDF**
+## Install VSCode on Ubuntu
+### **1. Install Prerequisites**
 ```sh
-pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
+sudo apt-get install wget gpg
+wget -qO- https://packages.microsoft.com/keys/microsoft.asc | gpg --dearmor > packages.microsoft.gpg
+sudo install -D -o root -g root -m 644 packages.microsoft.gpg /etc/apt/keyrings/packages.microsoft.gpg
+echo "deb [arch=amd64,arm64,armhf signed-by=/etc/apt/keyrings/packages.microsoft.gpg] https://packages.microsoft.com/repos/code stable main" |sudo tee /etc/apt/sources.list.d/vscode.list > /dev/null
+rm -f packages.microsoft.gpg
+sudo apt install apt-transport-https
+sudo apt update
+sudo apt install code # or code-insiders
 ```
 
-
-
-
-pip3 install catkin_pkg lark-parser colcon-common-extensions empy==3.3.4
-
-# in micro_ros settings set WIFI and Password ssh
-cd ~/SnekBot/esp-idf-master/components/micro_ros_espidf_components-jazzy/examples/int32_publisher
-idf.py set-target esp32s3
-idf.py menuconfig
-
-
-
-
-ros2 run micro_ros_agent micro_ros_agent serial --dev /dev/ttyACM0
-
-
-
-idf.py set-target esp32
-idf.py menuconfig
-idf.py -p /dev/ttyACM0 flash
-idf.py build
-ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
-sudo apt install python3-venv
-mkdir snekbot_ws
-
-
-### **5. Install and activate virtual ennvirnoment**
+## Setting up Robotics Toolbox Python environment
+### **1. Install Prerequisites**
 ```sh
+sudo apt install python3-venv
+cd ~SnekBot
 python3 -m venv venv
 source venv/bin/activate
-```
 
-### **5. Install Robotics Toolbox**
-```sh
 pip3 install pygame
 pip3 install setuptools
 pip3 install roboticstoolbox-python
 pip3 install "numpy<2"
+```
+
+## Useful Commands
+### **Sourcing Ros2**
+```sh
+source /opt/ros/jazzy/setup.bash
+```
+
+### **Building micro-ROS-Agent**
+```sh
+cd ~SnekBot/ros2_ws
+colcon build --symlink-install
+source install/setup.bash
+```
+```sh
+ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888
+```
+
+### **Launching Foxglove Monitoring**
+```sh
+source /opt/ros/jazzy/setup.bash
+ros2 run foxglove_bridge foxglove_bridge
+```
+
+### **Sourcing ESP-IDF**
+```sh
+. $HOME/esp/esp-idf/export.sh
+```
+
+### **Flashing and Monitoring ESP32-S3**
+```sh
+idf.py -p /dev/ttyACM0 flash
+idf.py -p /dev/ttyACM0 monitor
 ```
