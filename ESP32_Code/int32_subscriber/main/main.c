@@ -1,4 +1,6 @@
-const int servoPin = 18; // Change this to the actual GPIO pin connected to your servo
+#include <Arduino.h>
+
+const int servoPin = 2; // Change this to the actual GPIO pin connected to your servo
 const int freq = 50; // Servo PWM frequency
 const int channel = 0; // LEDC channel
 const int resolution = 16; // Resolution of PWM (16-bit)
