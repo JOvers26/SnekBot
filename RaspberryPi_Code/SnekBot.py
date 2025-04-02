@@ -1,6 +1,5 @@
 import rclpy
 from rclpy.node import Node
-from std_msgs.msg import Float64
 from sensor_msgs.msg import JointState
 import numpy as np
 import roboticstoolbox as rtb
@@ -35,33 +34,28 @@ class SnekBot(ERobot):
         self.target_position = None
         self.running = False
         self.control_thread = None
+        self.gripper_position = 0.0  # Initialize gripper position
 
         # ROS 2 Node Initialization
         rclpy.init()
         self.node = Node('snekbot_node')
         
-        # Create publishers
+        # Create joint state publisher
         self.joint_state_pub = self.node.create_publisher(JointState, 'snekbot/test_joint_states', 10)
-        self.gripper_pub = self.node.create_publisher(Float64, 'snekbot/gripper_position', 10)
 
     @staticmethod
     def get_urdf_path(urdf_filename):
-        # Get the absolute path of the Python script
         script_dir = Path(__file__).resolve().parent
-        # Return the full path of the URDF file
         return script_dir / urdf_filename
     
     def set_position(self):
         self.current_position = self.fkine(self.q)
-        # origin_axes = sg.Axes(length=0.1, pose=self.current_position)
-        # self.env.add(origin_axes)
 
     def move_to_joint_position(self, start, end, steps):
         qt = rtb.jtraj(start, end, steps)
         for q in qt.q:
             self.q = q
-            self.publish_joint_state()  # Publish joint states here
-            # self.env.step(0.01)
+            self.publish_joint_state()  # Publish joint states
         self.set_position()
 
     def set_target_position(self, new_position):
@@ -78,15 +72,14 @@ class SnekBot(ERobot):
                 continue
 
             x, y, z, R, P, Y = self.target_position
-            previous_q = self.q.copy()
             
             end_effector_position = self.fkine(self.q) * SE3(x, y, z) * SE3.RPY(
-            [np.deg2rad(P*60), np.deg2rad(R), np.deg2rad(Y)], order='xyz'
-        )
+                [np.deg2rad(P*60), np.deg2rad(R), np.deg2rad(Y)], order='xyz'
+            )
 
             arrived = False
             while not arrived:
-                print(self.q)  # Send joint data here
+                print(self.q)  # Send joint data
                 self.publish_joint_state()  # Publish joint states
                 if not np.array_equal(self.target_position, np.array([x, y, z, R, P, Y])):
                     break
@@ -100,8 +93,9 @@ class SnekBot(ERobot):
                 self.target_position = None
 
     def move_grippers(self, theta):
-        print(theta)  # Send gripper data here
-        self.publish_gripper_state(theta)  # Publish gripper position
+        self.gripper_position = theta  # Store gripper position
+        print(f"Gripper position: {theta}")  
+        self.publish_joint_state()  # Publish updated joint state with gripper
 
     def stop_movement(self):
         self.running = False
@@ -109,21 +103,13 @@ class SnekBot(ERobot):
             self.control_thread.join()
 
     def publish_joint_state(self):
-        # Publish joint states
         joint_state_msg = JointState()
         joint_state_msg.header.stamp = rclpy.time.Time().to_msg()
-        joint_state_msg.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6']  # Modify these names as needed
-        joint_state_msg.position = self.q.tolist()
+        joint_state_msg.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6', 'gripper']  # Added 'gripper'
+        joint_state_msg.position = self.q.tolist() + [self.gripper_position]  # Append gripper position
         self.joint_state_pub.publish(joint_state_msg)
 
-    def publish_gripper_state(self, theta):
-        # Publish gripper position
-        gripper_msg = Float64()
-        gripper_msg.data = theta
-        self.gripper_pub.publish(gripper_msg)
-
 def main():
-    # Example of creating a robot and controlling it
     snekbot = SnekBot()
     snekbot.move_to_joint_position(snekbot.configs["init"], snekbot.configs["stance"], 50)
     snekbot.move_grippers(0.5)  # Example gripper position
