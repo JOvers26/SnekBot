@@ -19,6 +19,7 @@
 #include <rmw_microros/rmw_microros.h>
 #endif
 
+#define NUM_JOINTS 7  // Updated to 7 to include the gripper
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n", __LINE__, (int)temp_rc); vTaskDelete(NULL);} }
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n", __LINE__, (int)temp_rc);} }
 
@@ -72,15 +73,15 @@ void micro_ros_task(void * arg)
         "snekbot/test_joint_states"));
 
     // Allocate memory for received message
-    recv_joint_state_msg.position.capacity = 6;
+    recv_joint_state_msg.position.capacity = NUM_JOINTS;  // Updated to 7 joints
     recv_joint_state_msg.position.size = 0;
-    recv_joint_state_msg.position.data = malloc(6 * sizeof(double));
+    recv_joint_state_msg.position.data = malloc(NUM_JOINTS * sizeof(double));
     
-    recv_joint_state_msg.name.capacity = 6;
+    recv_joint_state_msg.name.capacity = NUM_JOINTS;  // Updated to 7 joints
     recv_joint_state_msg.name.size = 0;
-    recv_joint_state_msg.name.data = malloc(6 * sizeof(rosidl_runtime_c__String));
+    recv_joint_state_msg.name.data = malloc(NUM_JOINTS * sizeof(rosidl_runtime_c__String));
     
-    for (size_t i = 0; i < 6; i++) {
+    for (size_t i = 0; i < NUM_JOINTS; i++) {
         recv_joint_state_msg.name.data[i].data = malloc(20);
         recv_joint_state_msg.name.data[i].size = 0;
         recv_joint_state_msg.name.data[i].capacity = 20;
@@ -111,7 +112,7 @@ void micro_ros_task(void * arg)
     RCCHECK(rcl_node_fini(&node));
 
     free(recv_joint_state_msg.position.data);
-    for (size_t i = 0; i < 6; i++) {
+    for (size_t i = 0; i < NUM_JOINTS; i++) {
         free(recv_joint_state_msg.name.data[i].data);
     }
     free(recv_joint_state_msg.name.data);
