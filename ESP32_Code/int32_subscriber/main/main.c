@@ -1,6 +1,7 @@
 #include <string.h>
 #include <stdio.h>
 #include <unistd.h>
+#include <stdlib.h>  // For malloc
 
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
@@ -18,8 +19,8 @@
 #include <rmw_microros/rmw_microros.h>
 #endif
 
-#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);} }
-#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);} }
+#define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n", __LINE__, (int)temp_rc); vTaskDelete(NULL);} }
+#define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n", __LINE__, (int)temp_rc);} }
 
 // Subscription variable
 rcl_subscription_t snekbot_data_subscriber;
@@ -29,6 +30,12 @@ std_msgs__msg__String recv_snekbot_msg;  // String message type
 void snekbot_data_callback(const void * msgin)
 {
     const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
+
+    if (msg == NULL) {
+        printf("[ERROR] Received NULL message!\n");
+        return;
+    }
+
     printf("Received message: %s\n", msg->data.data);
 }
 
@@ -59,7 +66,16 @@ void micro_ros_task(void * arg)
         &snekbot_data_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
-        "snekbot/data"));
+        "snekbot/data"));  // Ensure this matches the Python publisher
+
+    // Allocate memory for the received message
+    recv_snekbot_msg.data.capacity = 256;
+    recv_snekbot_msg.data.size = 0;
+    recv_snekbot_msg.data.data = malloc(256);
+    if (!recv_snekbot_msg.data.data) {
+        printf("[ERROR] Failed to allocate memory for received message\n");
+        return;
+    }
 
     // Create executor for the subscription
     rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
@@ -67,6 +83,8 @@ void micro_ros_task(void * arg)
 
     // Add subscription to executor
     RCCHECK(rclc_executor_add_subscription(&executor, &snekbot_data_subscriber, &recv_snekbot_msg, &snekbot_data_callback, ON_NEW_DATA));
+
+    printf("Micro-ROS subscriber is running...\n");
 
     // Spin to handle callbacks
     while (1) {
@@ -78,6 +96,8 @@ void micro_ros_task(void * arg)
     RCCHECK(rcl_subscription_fini(&snekbot_data_subscriber, &node));
     RCCHECK(rcl_node_fini(&node));
 
+    free(recv_snekbot_msg.data.data);
+
     vTaskDelete(NULL);
 }
 
@@ -88,10 +108,10 @@ void app_main(void)
     ESP_ERROR_CHECK(uros_network_interface_initialize());
 #endif
 
-    // Create the micro-ROS task
+    // Create the micro-ROS task with increased stack size
     xTaskCreate(micro_ros_task,
                 "uros_task",
-                CONFIG_MICRO_ROS_APP_STACK,
+                8 * 1024,  // Increased stack size
                 NULL,
                 CONFIG_MICRO_ROS_APP_TASK_PRIO,
                 NULL);
