@@ -10,8 +10,7 @@
 #include <uros_network_interfaces.h>
 #include <rcl/rcl.h>
 #include <rcl/error_handling.h>
-#include <std_msgs/msg/float64.h>
-#include <sensor_msgs/msg/joint_state.h>  // Use JointState message type
+#include <std_msgs/msg/string.h>  // Use String message type
 #include <rclc/rclc.h>
 #include <rclc/executor.h>
 
@@ -22,26 +21,15 @@
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n",__LINE__,(int)temp_rc);vTaskDelete(NULL);} }
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n",__LINE__,(int)temp_rc);} }
 
-rcl_subscription_t gripper_subscriber;
-rcl_subscription_t joint_states_subscriber;
-std_msgs__msg__Float64 recv_gripper_msg;
-sensor_msgs__msg__JointState recv_joint_states_msg;  // Update to JointState message type
+// Subscription variable
+rcl_subscription_t snekbot_data_subscriber;
+std_msgs__msg__String recv_snekbot_msg;  // String message type
 
-// Gripper subscription callback function
-void gripper_subscription_callback(const void * msgin)
+// Subscription callback function
+void snekbot_data_callback(const void * msgin)
 {
-    const std_msgs__msg__Float64 * msg = (const std_msgs__msg__Float64 *)msgin;
-    printf("Received gripper position: %.2f\n", msg->data);
-}
-
-// Joint states subscription callback function
-void joint_states_subscription_callback(const void * msgin)
-{
-    const sensor_msgs__msg__JointState * msg = (const sensor_msgs__msg__JointState *)msgin;
-    printf("Received joint states:\n");
-    for (int i = 0; i < msg->position.size; i++) {
-        printf("Joint %d position: %.2f\n", i, msg->position.data[i]);
-    }
+    const std_msgs__msg__String * msg = (const std_msgs__msg__String *)msgin;
+    printf("Received message: %s\n", msg->data.data);
 }
 
 // Micro-ROS task to handle subscriptions and execution loop
@@ -64,29 +52,21 @@ void micro_ros_task(void * arg)
 
     // Create the ROS node
     rcl_node_t node = rcl_get_zero_initialized_node();
-    RCCHECK(rclc_node_init_default(&node, "gripper_joint_states_subscriber_rclc", "", &support));
+    RCCHECK(rclc_node_init_default(&node, "snekbot_data_subscriber_rclc", "", &support));
 
-    // Initialize subscription for gripper position
+    // Initialize subscription for SnekBot data
     RCCHECK(rclc_subscription_init_default(
-        &gripper_subscriber,
+        &snekbot_data_subscriber,
         &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, Float64),
-        "snekbot/gripper_position"));
+        ROSIDL_GET_MSG_TYPE_SUPPORT(std_msgs, msg, String),
+        "snekbot/data"));
 
-    // Initialize subscription for joint states
-    RCCHECK(rclc_subscription_init_default(
-        &joint_states_subscriber,
-        &node,
-        ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState),  // Use JointState
-        "snekbot/test_joint_states"));
-
-    // Create executor for the subscriptions
+    // Create executor for the subscription
     rclc_executor_t executor = rclc_executor_get_zero_initialized_executor();
-    RCCHECK(rclc_executor_init(&executor, &support.context, 2, &allocator));
+    RCCHECK(rclc_executor_init(&executor, &support.context, 1, &allocator));
 
-    // Add subscriptions to executor
-    RCCHECK(rclc_executor_add_subscription(&executor, &gripper_subscriber, &recv_gripper_msg, &gripper_subscription_callback, ON_NEW_DATA));
-    RCCHECK(rclc_executor_add_subscription(&executor, &joint_states_subscriber, &recv_joint_states_msg, &joint_states_subscription_callback, ON_NEW_DATA));
+    // Add subscription to executor
+    RCCHECK(rclc_executor_add_subscription(&executor, &snekbot_data_subscriber, &recv_snekbot_msg, &snekbot_data_callback, ON_NEW_DATA));
 
     // Spin to handle callbacks
     while (1) {
@@ -95,8 +75,7 @@ void micro_ros_task(void * arg)
     }
 
     // Clean up
-    RCCHECK(rcl_subscription_fini(&gripper_subscriber, &node));
-    RCCHECK(rcl_subscription_fini(&joint_states_subscriber, &node));
+    RCCHECK(rcl_subscription_fini(&snekbot_data_subscriber, &node));
     RCCHECK(rcl_node_fini(&node));
 
     vTaskDelete(NULL);
