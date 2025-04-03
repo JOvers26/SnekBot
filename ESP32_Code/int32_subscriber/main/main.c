@@ -103,6 +103,9 @@ static void setup_pwm(void) {
     // Timer 1 setup (for JOINT_4, JOINT_5)
     mcpwm_new_timer(&timer_config, &timer1);
 
+    // Timer 2 setup (for JOINT_6, JOINT_G)
+    mcpwm_new_timer(&timer_config, &timer2);
+
     // Operator setup for Timer 0
     mcpwm_operator_config_t operator_config = {.group_id = 0};
     mcpwm_new_operator(&operator_config, &operator0);
@@ -111,6 +114,10 @@ static void setup_pwm(void) {
     // Operator setup for Timer 1
     mcpwm_new_operator(&operator_config, &operator1);
     mcpwm_operator_connect_timer(operator1, timer1);
+
+    // Operator setup for Timer 2
+    mcpwm_new_operator(&operator_config, &operator2);
+    mcpwm_operator_connect_timer(operator2, timer2);
 
     // Comparator and generator setup for each joint and timer
 
@@ -142,9 +149,69 @@ static void setup_pwm(void) {
         MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator02, MCPWM_GEN_ACTION_LOW));
 
 
+    // Timer 1 (for JOINT_4, JOINT_5)
+    // JOINT_4
+    mcpwm_comparator_config_t comparator11_config = {.flags.update_cmp_on_tez = true};
+    mcpwm_new_comparator(operator1, &comparator11_config, &comparator11);
+    mcpwm_generator_config_t generator11_config = {
+        .gen_gpio_num = JOINT_4,
+        .flags.invert_pwm = false
+    };
+    mcpwm_new_generator(operator1, &generator11_config, &generator11);
+    mcpwm_generator_set_action_on_timer_event(generator11,
+        MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
+    mcpwm_generator_set_action_on_compare_event(generator11,
+        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator11, MCPWM_GEN_ACTION_LOW));
+
+    // JOINT_5
+    mcpwm_comparator_config_t comparator12_config = {.flags.update_cmp_on_tez = true};
+    mcpwm_new_comparator(operator1, &comparator12_config, &comparator12);
+    mcpwm_generator_config_t generator12_config = {
+        .gen_gpio_num = JOINT_5,
+        .flags.invert_pwm = false
+    };
+    mcpwm_new_generator(operator1, &generator12_config, &generator12);
+    mcpwm_generator_set_action_on_timer_event(generator12,
+        MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
+    mcpwm_generator_set_action_on_compare_event(generator12,
+        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator12, MCPWM_GEN_ACTION_LOW));
+
+    // Timer 2 (for JOINT_6, JOINT_G)
+    // JOINT_6
+    mcpwm_comparator_config_t comparator21_config = {.flags.update_cmp_on_tez = true};
+    mcpwm_new_comparator(operator2, &comparator21_config, &comparator21);
+    mcpwm_generator_config_t generator21_config = {
+        .gen_gpio_num = JOINT_6,
+        .flags.invert_pwm = false
+    };
+    mcpwm_new_generator(operator2, &generator21_config, &generator21);
+    mcpwm_generator_set_action_on_timer_event(generator21,
+        MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
+    mcpwm_generator_set_action_on_compare_event(generator21,
+        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator21, MCPWM_GEN_ACTION_LOW));
+
+    // JOINT_G (Gripper)
+    mcpwm_comparator_config_t comparator22_config = {.flags.update_cmp_on_tez = true};
+    mcpwm_new_comparator(operator2, &comparator22_config, &comparator22);
+    mcpwm_generator_config_t generator22_config = {
+        .gen_gpio_num = JOINT_G,
+        .flags.invert_pwm = false
+    };
+    mcpwm_new_generator(operator2, &generator22_config, &generator22);
+    mcpwm_generator_set_action_on_timer_event(generator22,
+        MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
+    mcpwm_generator_set_action_on_compare_event(generator22,
+        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator22, MCPWM_GEN_ACTION_LOW));
+
     // Start all timers
     mcpwm_timer_enable(timer0);
     mcpwm_timer_start_stop(timer0, MCPWM_TIMER_START_NO_STOP);
+    
+    mcpwm_timer_enable(timer1);
+    mcpwm_timer_start_stop(timer1, MCPWM_TIMER_START_NO_STOP);
+    
+    mcpwm_timer_enable(timer2);
+    mcpwm_timer_start_stop(timer2, MCPWM_TIMER_START_NO_STOP);
 }
 
 
@@ -166,7 +233,20 @@ void snekbot_joint_state_callback(const void * msgin)
         }
         else if (strcmp(msg->name.data[i].data, "joint_2") == 0) {
             set_servo_angle_radians(comparator02, (float)msg->position.data[i]);
-        }        
+        }
+        else if (strcmp(msg->name.data[i].data, "joint_4") == 0) {
+            set_servo_angle_radians(comparator11, (float)msg->position.data[i]);
+        }
+        else if (strcmp(msg->name.data[i].data, "joint_5") == 0) {
+            set_servo_angle_radians(comparator12, (float)msg->position.data[i]);
+        }
+        else if (strcmp(msg->name.data[i].data, "joint_6") == 0) {
+            set_servo_angle_radians(comparator21, (float)msg->position.data[i]);
+        }
+        else if (strcmp(msg->name.data[i].data, "joint_7") == 0) {
+            set_servo_angle_radians(comparator22, (float)msg->position.data[i]);
+        }
+        
     }
 }
 
