@@ -39,7 +39,7 @@ while running:
     if joystick:
         x_axis = -apply_deadzone(joystick.get_axis(0))
         y_axis = apply_deadzone(joystick.get_axis(1))
-        R = -apply_deadzone(joystick.get_axis(3))
+        R = apply_deadzone(joystick.get_axis(3))
         P = apply_deadzone(joystick.get_axis(4))
 
         z_axis = 0
