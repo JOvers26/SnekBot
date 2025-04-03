@@ -30,6 +30,18 @@
 rcl_subscription_t snekbot_joint_state_subscriber;
 sensor_msgs__msg__JointState recv_joint_state_msg;
 
+#define JOINT_1 1
+#define JOINT_2 2
+#define JOINT_3 42
+#define JOINT_4 41
+#define JOINT_5 40
+#define JOINT_6 39
+#define JOINT_G 38
+#define SERVO_MIN_PULSEWIDTH_US 500   // Minimum pulse width (0°)
+#define SERVO_MAX_PULSEWIDTH_US 2500  // Maximum pulse width (180°)
+#define SERVO_MAX_DEGREE 270          // Maximum degree of rotation
+#define PI 3.14159265359               // Define constant PI
+
 mcpwm_cmpr_handle_t comparators[3][3]; // 3 timers, 3 comparators per timer
 mcpwm_timer_handle_t timers[3];         // 3 timers
 mcpwm_oper_handle_t operators[3][3];   // 3 operators per timer
