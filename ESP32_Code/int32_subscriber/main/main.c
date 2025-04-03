@@ -241,8 +241,13 @@ void snekbot_joint_state_callback(const void * msgin)
     for (size_t i = 0; i < msg->position.size; i++) {
         printf("  Joint %zu (%s): %f\n", i, msg->name.data[i].data, msg->position.data[i]);
         if (strcmp(msg->name.data[i].data, "joint_1") == 0) {
-            printf("  fuck ye %zu (%s): %f\n", i, msg->name.data[i].data, msg->position.data[i]);
             set_servo_angle_radians(comparator01, (float)msg->position.data[i]);
+        }
+        else if (strcmp(msg->name.data[i].data, "joint_2") == 0) {
+            set_servo_angle_radians(comparator02, (float)msg->position.data[i]);
+        }
+        else if (strcmp(msg->name.data[i].data, "joint_3") == 0) {
+            set_servo_angle_radians(comparator03, (float)msg->position.data[i]);
         }
     }
 }
