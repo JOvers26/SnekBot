@@ -50,7 +50,6 @@ static mcpwm_gen_handle_t generators[NUM_JOINTS];
 mcpwm_cmpr_handle_t comparators[NUM_JOINTS]; // Array to store comparators for each joint
 mcpwm_timer_handle_t timer;
 mcpwm_oper_handle_t operator;
-mcpwm_gen_handle_t generators[NUM_JOINTS]; // Array of generators
 
 static uint32_t radians_to_angle(float radians) {
     // Map radians to degrees where -PI -> 0° and PI -> 180°
