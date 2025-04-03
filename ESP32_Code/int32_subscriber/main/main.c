@@ -41,12 +41,14 @@ mcpwm_timer_handle_t timer;
 mcpwm_oper_handle_t operator;
 mcpwm_gen_handle_t generator;
 
-// Convert radians to an angle (in degrees)
 static uint32_t radians_to_angle(float radians) {
     // Map radians to degrees where -PI -> 0° and PI -> 180°
-    float angle = radians * (SERVO_MAX_DEGREE / PI);
-    if (angle < 0) angle = 0;       // Ensure the angle stays within 0-180 range
-    if (angle > SERVO_MAX_DEGREE) angle = SERVO_MAX_DEGREE;  // Clamp to 180 degrees
+    float angle = ((radians + M_PI) / (2 * M_PI)) * SERVO_MAX_DEGREE;
+    
+    // Ensure the angle stays within 0-180 range
+    if (angle < 0) angle = 0;
+    if (angle > SERVO_MAX_DEGREE) angle = SERVO_MAX_DEGREE;
+    
     return (uint32_t)angle;
 }
 
