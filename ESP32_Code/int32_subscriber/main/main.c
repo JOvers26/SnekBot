@@ -82,16 +82,11 @@ static uint32_t angle_to_pulsewidth(uint32_t angle) {
     return SERVO_MIN_PULSEWIDTH_US + (angle * (SERVO_MAX_PULSEWIDTH_US - SERVO_MIN_PULSEWIDTH_US) / SERVO_MAX_DEGREE);
 }
 
-// Move servo to a specific angle in degrees
-static void set_servo_angle(uint32_t angle) {
-    uint32_t pulse_width = angle_to_pulsewidth(angle);
-    mcpwm_comparator_set_compare_value(comparator01, pulse_width);
-}
-
 // Move servo based on radians input
 static void set_servo_angle_radians(float radians) {
     uint32_t angle = radians_to_angle(radians);
-    set_servo_angle(angle);
+    uint32_t pulse_width = angle_to_pulsewidth(angle);
+    mcpwm_comparator_set_compare_value(comparator01, pulse_width);
 }
 
 static void setup_pwm(void) {
