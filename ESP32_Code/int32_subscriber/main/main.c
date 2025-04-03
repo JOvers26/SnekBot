@@ -154,7 +154,7 @@ static void setup_pwm(void) {
     mcpwm_comparator_config_t comparator11_config = {.flags.update_cmp_on_tez = true};
     mcpwm_new_comparator(operator1, &comparator11_config, &comparator11);
     mcpwm_generator_config_t generator11_config = {
-        .gen_gpio_num = JOINT_4,
+        .gen_gpio_num = JOINT_3,
         .flags.invert_pwm = false
     };
     mcpwm_new_generator(operator1, &generator11_config, &generator11);
@@ -167,7 +167,7 @@ static void setup_pwm(void) {
     mcpwm_comparator_config_t comparator12_config = {.flags.update_cmp_on_tez = true};
     mcpwm_new_comparator(operator1, &comparator12_config, &comparator12);
     mcpwm_generator_config_t generator12_config = {
-        .gen_gpio_num = JOINT_5,
+        .gen_gpio_num = JOINT_4,
         .flags.invert_pwm = false
     };
     mcpwm_new_generator(operator1, &generator12_config, &generator12);
@@ -181,7 +181,7 @@ static void setup_pwm(void) {
     mcpwm_comparator_config_t comparator21_config = {.flags.update_cmp_on_tez = true};
     mcpwm_new_comparator(operator2, &comparator21_config, &comparator21);
     mcpwm_generator_config_t generator21_config = {
-        .gen_gpio_num = JOINT_6,
+        .gen_gpio_num = JOINT_5,
         .flags.invert_pwm = false
     };
     mcpwm_new_generator(operator2, &generator21_config, &generator21);
@@ -194,7 +194,7 @@ static void setup_pwm(void) {
     mcpwm_comparator_config_t comparator22_config = {.flags.update_cmp_on_tez = true};
     mcpwm_new_comparator(operator2, &comparator22_config, &comparator22);
     mcpwm_generator_config_t generator22_config = {
-        .gen_gpio_num = JOINT_G,
+        .gen_gpio_num = JOINT_6,
         .flags.invert_pwm = false
     };
     mcpwm_new_generator(operator2, &generator22_config, &generator22);
@@ -234,16 +234,16 @@ void snekbot_joint_state_callback(const void * msgin)
         else if (strcmp(msg->name.data[i].data, "joint_2") == 0) {
             set_servo_angle_radians(comparator02, (float)msg->position.data[i]);
         }
-        else if (strcmp(msg->name.data[i].data, "joint_4") == 0) {
+        else if (strcmp(msg->name.data[i].data, "joint_3") == 0) {
             set_servo_angle_radians(comparator11, (float)msg->position.data[i]);
         }
-        else if (strcmp(msg->name.data[i].data, "joint_5") == 0) {
+        else if (strcmp(msg->name.data[i].data, "joint_4") == 0) {
             set_servo_angle_radians(comparator12, (float)msg->position.data[i]);
         }
-        else if (strcmp(msg->name.data[i].data, "joint_6") == 0) {
+        else if (strcmp(msg->name.data[i].data, "joint_5") == 0) {
             set_servo_angle_radians(comparator21, (float)msg->position.data[i]);
         }
-        else if (strcmp(msg->name.data[i].data, "joint_7") == 0) {
+        else if (strcmp(msg->name.data[i].data, "joint_6") == 0) {
             set_servo_angle_radians(comparator22, (float)msg->position.data[i]);
         }
         
