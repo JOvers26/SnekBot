@@ -45,6 +45,14 @@ sensor_msgs__msg__JointState recv_joint_state_msg;
 #define SERVO_MAX_DEGREE 270          // Maximum degree of rotation
 #define PI 3.14159265359               // Define constant PI
 
+// Resources for PWM control
+mcpwm_cmpr_handle_t comparators[NUM_JOINTS];
+mcpwm_timer_handle_t timers[2];  // 2 timers
+mcpwm_oper_handle_t operators[3];  // 3 operators
+mcpwm_gen_handle_t generators[NUM_JOINTS];
+
+const int servo_pins[NUM_JOINTS] = {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G};
+
 static uint32_t radians_to_angle(float radians) {
     // Map radians to degrees where -PI -> 0° and PI -> 180°
     float angle = ((radians + M_PI) / (2 * M_PI)) * SERVO_MAX_DEGREE;
@@ -75,14 +83,6 @@ static void set_servo_angle_radians(int joint, float radians) {
     uint32_t angle = radians_to_angle(radians);
     set_servo_angle(joint, angle);
 }
-
-// Resources for PWM control
-mcpwm_cmpr_handle_t comparators[NUM_JOINTS];
-mcpwm_timer_handle_t timers[2];  // 2 timers
-mcpwm_oper_handle_t operators[3];  // 3 operators
-mcpwm_gen_handle_t generators[NUM_JOINTS];
-
-const int servo_pins[NUM_JOINTS] = {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G};
 
 static void setup_pwm(void) {
     // Configure a single timer for all servos (50Hz frequency)
