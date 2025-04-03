@@ -39,17 +39,10 @@ sensor_msgs__msg__JointState recv_joint_state_msg;
 #define JOINT_G 38
 
 #define JOINTS_GPIO {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G}
-
-static mcpwm_gen_handle_t generators[NUM_JOINTS];
-
 #define SERVO_MIN_PULSEWIDTH_US 500   // Minimum pulse width (0°)
 #define SERVO_MAX_PULSEWIDTH_US 2500  // Maximum pulse width (180°)
 #define SERVO_MAX_DEGREE 270          // Maximum degree of rotation
 #define PI 3.14159265359               // Define constant PI
-
-mcpwm_cmpr_handle_t comparators[NUM_JOINTS]; // Array to store comparators for each joint
-mcpwm_timer_handle_t timer;
-mcpwm_oper_handle_t operator;
 
 static uint32_t radians_to_angle(float radians) {
     // Map radians to degrees where -PI -> 0° and PI -> 180°
@@ -68,10 +61,14 @@ static uint32_t angle_to_pulsewidth(uint32_t angle) {
 }
 
 static void set_servo_angle(int joint, uint32_t angle) {
-    if (joint < 0 || joint >= NUM_JOINTS) return;  // Avoid out-of-bounds errors
+    if (joint < 0 || joint >= NUM_JOINTS) {
+        printf("Invalid joint index: %d\n", joint);
+        return;
+    }
     uint32_t pulse_width = angle_to_pulsewidth(angle);
     mcpwm_comparator_set_compare_value(comparators[joint], pulse_width);
 }
+
 
 
 // Move a specific servo based on radians input
@@ -80,46 +77,60 @@ static void set_servo_angle_radians(int joint, float radians) {
     set_servo_angle(joint, angle);
 }
 
+
+mcpwm_cmpr_handle_t comparators[NUM_JOINTS];
+mcpwm_timer_handle_t timers[NUM_JOINTS];
+mcpwm_oper_handle_t operators[NUM_JOINTS];
+mcpwm_gen_handle_t generators[NUM_JOINTS];
+
+const int servo_pins[NUM_JOINTS] = {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G};
+
 static void setup_pwm(void) {
-    // Timer setup
-    mcpwm_timer_config_t timer_config = {
-        .group_id = 0,
-        .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
-        .resolution_hz = 1000000,  
-        .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
-        .period_ticks = 20000  // 50Hz PWM
-    };
-    mcpwm_new_timer(&timer_config, &timer);
-
-    // Operator setup
-    mcpwm_operator_config_t operator_config = {.group_id = 0};
-    mcpwm_new_operator(&operator_config, &operator);
-    mcpwm_operator_connect_timer(operator, timer);
-
-    int joint_pins[] = JOINTS_GPIO;
     for (int i = 0; i < NUM_JOINTS; i++) {
-        // Comparator setup
-        mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
-        mcpwm_new_comparator(operator, &comparator_config, &comparators[i]);
+        // Configure a new timer for each joint
+        mcpwm_timer_config_t timer_config = {
+            .group_id = 0,  
+            .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
+            .resolution_hz = 1000000,  
+            .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
+            .period_ticks = 20000  // 50Hz PWM
+        };
+        mcpwm_new_timer(&timer_config, &timers[i]);
 
-        // Generator setup
+        // Create a new operator for each servo
+        mcpwm_operator_config_t operator_config = {.group_id = 0};
+        mcpwm_new_operator(&operator_config, &operators[i]);
+        mcpwm_operator_connect_timer(operators[i], timers[i]);
+
+        // Create a comparator for each servo
+        mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
+        if (mcpwm_new_comparator(operators[i], &comparator_config, &comparators[i]) != ESP_OK) {
+            printf("Failed to create comparator for joint %d\n", i);
+            continue;
+        }
+
+        // Create a generator for each servo
         mcpwm_generator_config_t generator_config = {
-            .gen_gpio_num = joint_pins[i],
+            .gen_gpio_num = servo_pins[i],
             .flags.invert_pwm = false
         };
-        mcpwm_new_generator(operator, &generator_config, &generators[i]);
+        if (mcpwm_new_generator(operators[i], &generator_config, &generators[i]) != ESP_OK) {
+            printf("Failed to create generator for joint %d\n", i);
+            continue;
+        }
 
-        // Set actions for PWM signal
+        // Set PWM actions
         mcpwm_generator_set_action_on_timer_event(generators[i],
             MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
         mcpwm_generator_set_action_on_compare_event(generators[i],
             MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparators[i], MCPWM_GEN_ACTION_LOW));
-    }
 
-    // Start timer
-    mcpwm_timer_enable(timer);
-    mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP);
+        // Enable and start timer
+        mcpwm_timer_enable(timers[i]);
+        mcpwm_timer_start_stop(timers[i], MCPWM_TIMER_START_NO_STOP);
+    }
 }
+
 
 
 void snekbot_joint_state_callback(const void * msgin)
