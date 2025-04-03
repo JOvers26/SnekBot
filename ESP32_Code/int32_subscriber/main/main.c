@@ -7,6 +7,7 @@
 #include "freertos/task.h"
 #include "esp_log.h"
 #include "esp_system.h"
+#include "driver/mcpwm_prelude.h"
 
 #include <uros_network_interfaces.h>
 #include <rcl/rcl.h>
