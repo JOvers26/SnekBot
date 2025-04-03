@@ -8,8 +8,8 @@
 #define LEDC_TIMER LEDC_TIMER_0
 
 void setServoAngle(int angle) {
-    int dutyCycle = (angle * (2500 - 500) / 270) + 500; // Convert angle to duty cycle (500-2500us)
-    uint32_t duty = (dutyCycle * 8192) / 20000; // Scale to LEDC resolution (assuming 16-bit)
+    int dutyCycle = (angle * (2400 - 500) / 180) + 500; // Convert angle to duty cycle (500-2400us for 0-180 degrees)
+    uint32_t duty = (dutyCycle * 16384) / 20000; // Scale to LEDC resolution (assuming 14-bit)
     ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL, duty);
     ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL);
 }
@@ -17,7 +17,7 @@ void setServoAngle(int angle) {
 void app_main() {
     ledc_timer_config_t timerConfig = {
         .speed_mode = LEDC_LOW_SPEED_MODE,
-        .duty_resolution = LEDC_TIMER_16_BIT,
+        .duty_resolution = LEDC_TIMER_14_BIT, // Change to 14-bit resolution
         .timer_num = LEDC_TIMER,
         .freq_hz = SERVO_FREQ,
         .clk_cfg = LEDC_AUTO_CLK
@@ -39,7 +39,7 @@ void app_main() {
         setServoAngle(0); // Move to 0 degrees
         vTaskDelay(pdMS_TO_TICKS(5000)); // Wait 5 seconds
 
-        setServoAngle(270); // Move to 270 degrees
+        setServoAngle(180); // Move to 180 degrees
         vTaskDelay(pdMS_TO_TICKS(5000)); // Wait 5 seconds
     }
 }
