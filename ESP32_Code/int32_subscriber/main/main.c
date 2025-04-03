@@ -47,10 +47,10 @@ static mcpwm_gen_handle_t generators[NUM_JOINTS];
 #define SERVO_MAX_DEGREE 270          // Maximum degree of rotation
 #define PI 3.14159265359               // Define constant PI
 
-mcpwm_cmpr_handle_t comparator;
+mcpwm_cmpr_handle_t comparators[NUM_JOINTS]; // Array to store comparators for each joint
 mcpwm_timer_handle_t timer;
 mcpwm_oper_handle_t operator;
-mcpwm_gen_handle_t generator;
+mcpwm_gen_handle_t generators[NUM_JOINTS]; // Array of generators
 
 static uint32_t radians_to_angle(float radians) {
     // Map radians to degrees where -PI -> 0° and PI -> 180°
@@ -69,9 +69,11 @@ static uint32_t angle_to_pulsewidth(uint32_t angle) {
 }
 
 static void set_servo_angle(int joint, uint32_t angle) {
+    if (joint < 0 || joint >= NUM_JOINTS) return;  // Avoid out-of-bounds errors
     uint32_t pulse_width = angle_to_pulsewidth(angle);
     mcpwm_comparator_set_compare_value(comparators[joint], pulse_width);
 }
+
 
 // Move a specific servo based on radians input
 static void set_servo_angle_radians(int joint, float radians) {
@@ -95,29 +97,31 @@ static void setup_pwm(void) {
     mcpwm_new_operator(&operator_config, &operator);
     mcpwm_operator_connect_timer(operator, timer);
 
-    // Comparator setup
-    mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
-    mcpwm_new_comparator(operator, &comparator_config, &comparator);
-
-    // Setup PWM generators for all joints
-    int joint_pins[] = JOINTS_GPIO;  // Array holding all GPIOs for the joints
+    int joint_pins[] = JOINTS_GPIO;
     for (int i = 0; i < NUM_JOINTS; i++) {
+        // Comparator setup
+        mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
+        mcpwm_new_comparator(operator, &comparator_config, &comparators[i]);
+
+        // Generator setup
         mcpwm_generator_config_t generator_config = {
-            .gen_gpio_num = joint_pins[i],  // Use the respective GPIO for each joint
+            .gen_gpio_num = joint_pins[i],
             .flags.invert_pwm = false
         };
         mcpwm_new_generator(operator, &generator_config, &generators[i]);
 
+        // Set actions for PWM signal
         mcpwm_generator_set_action_on_timer_event(generators[i],
             MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
         mcpwm_generator_set_action_on_compare_event(generators[i],
-            MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator, MCPWM_GEN_ACTION_LOW));
+            MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparators[i], MCPWM_GEN_ACTION_LOW));
     }
 
     // Start timer
     mcpwm_timer_enable(timer);
     mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP);
 }
+
 
 void snekbot_joint_state_callback(const void * msgin)
 {
