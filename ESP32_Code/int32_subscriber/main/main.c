@@ -30,7 +30,6 @@
 rcl_subscription_t snekbot_joint_state_subscriber;
 sensor_msgs__msg__JointState recv_joint_state_msg;
 
-
 #define JOINT_1 1
 #define JOINT_2 2
 #define JOINT_3 42
@@ -38,26 +37,15 @@ sensor_msgs__msg__JointState recv_joint_state_msg;
 #define JOINT_5 40
 #define JOINT_6 39
 #define JOINT_G 38
-
-#define JOINTS_GPIO {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G}
 #define SERVO_MIN_PULSEWIDTH_US 500   // Minimum pulse width (0°)
 #define SERVO_MAX_PULSEWIDTH_US 2500  // Maximum pulse width (180°)
 #define SERVO_MAX_DEGREE 270          // Maximum degree of rotation
 #define PI 3.14159265359               // Define constant PI
 
-// Define MCPWM units and timers for each joint
-mcpwm_unit_t units[] = {MCPWM_UNIT_0, MCPWM_UNIT_0, MCPWM_UNIT_0, MCPWM_UNIT_0, MCPWM_UNIT_1, MCPWM_UNIT_1, MCPWM_UNIT_1};
-mcpwm_timer_t timers[] = {MCPWM_TIMER_0, MCPWM_TIMER_1, MCPWM_TIMER_2, MCPWM_TIMER_0, MCPWM_TIMER_1, MCPWM_TIMER_2, MCPWM_TIMER_0};
-mcpwm_oper_t operators[] = {MCPWM_OPR_A, MCPWM_OPR_B, MCPWM_OPR_A, MCPWM_OPR_B, MCPWM_OPR_A, MCPWM_OPR_B, MCPWM_OPR_A};
-
-mcpwm_comparator_handle_t comparators[NUM_JOINTS];
-
-for (int i = 0; i < NUM_JOINTS; i++) {
-    mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
-    ESP_ERROR_CHECK(mcpwm_new_comparator(units[i], &comparator_config, &comparators[i]));
-}
-
-const int servo_pins[NUM_JOINTS] = {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G};
+mcpwm_cmpr_handle_t comparator;
+mcpwm_timer_handle_t timer;
+mcpwm_oper_handle_t operator;
+mcpwm_gen_handle_t generator;
 
 static uint32_t radians_to_angle(float radians) {
     // Map radians to degrees where -PI -> 0° and PI -> 180°
@@ -75,71 +63,57 @@ static uint32_t angle_to_pulsewidth(uint32_t angle) {
     return SERVO_MIN_PULSEWIDTH_US + (angle * (SERVO_MAX_PULSEWIDTH_US - SERVO_MIN_PULSEWIDTH_US) / SERVO_MAX_DEGREE);
 }
 
-static void set_servo_angle(int joint, uint32_t angle) {
-    if (joint < 0 || joint >= NUM_JOINTS) {
-        printf("Invalid joint index: %d\n", joint);
-        return;
-    }
+// Move servo to a specific angle in degrees
+static void set_servo_angle(uint32_t angle) {
     uint32_t pulse_width = angle_to_pulsewidth(angle);
-    mcpwm_comparator_set_compare_value(comparators[joint], pulse_width);
+    mcpwm_comparator_set_compare_value(comparator, pulse_width);
 }
 
-// Move a specific servo based on radians input
-static void set_servo_angle_radians(int joint, float radians) {
+// Move servo based on radians input
+static void set_servo_angle_radians(float radians) {
     uint32_t angle = radians_to_angle(radians);
-    set_servo_angle(joint, angle);
+    set_servo_angle(angle);
 }
 
+// Setup the MCPWM for servo control
 static void setup_pwm(void) {
-    // Configure a single timer for all servos (50Hz frequency)
+    // Timer setup
     mcpwm_timer_config_t timer_config = {
-        .group_id = 0,  
+        .group_id = 0,
         .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
         .resolution_hz = 1000000,  
         .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
-        .period_ticks = 20000  // 50Hz PWM (20ms period)
+        .period_ticks = 20000  // 50Hz PWM
     };
+    mcpwm_new_timer(&timer_config, &timer);
 
-    mcpwm_new_timer(&timer_config, &timers[0]);  // Single timer for all servos
-
-    // Create 2 operators: One for joints 1-6, one for the gripper
+    // Operator setup
     mcpwm_operator_config_t operator_config = {.group_id = 0};
-    
-    mcpwm_new_operator(&operator_config, &operators[0]);  // Operator 0 (Joints 1-6)
-    mcpwm_new_operator(&operator_config, &operators[1]);  // Operator 1 (Gripper)
+    mcpwm_new_operator(&operator_config, &operator);
+    mcpwm_operator_connect_timer(operator, timer);
 
-    // Connect operators to the same timer
-    mcpwm_operator_connect_timer(operators[0], timers[0]);
-    mcpwm_operator_connect_timer(operators[1], timers[0]);
+    // Comparator setup
+    mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
+    mcpwm_new_comparator(operator, &comparator_config, &comparator);
 
-    // Create comparators and generators for each joint
-    for (int i = 0; i < NUM_JOINTS; i++) {
-        int operator_index = (i < 6) ? 0 : 1;  // First 6 joints use Operator 0, Gripper uses Operator 1
+    // Generator setup
+    mcpwm_generator_config_t generator_config = {
+        .gen_gpio_num = JOINT_6,
+        .flags.invert_pwm = false
+    };
+    mcpwm_new_generator(operator, &generator_config, &generator);
 
-        // Create a comparator for each joint
-        mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
-        mcpwm_new_comparator(operators[operator_index], &comparator_config, &comparators[i]);
+    mcpwm_generator_set_action_on_timer_event(generator,
+        MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
+    mcpwm_generator_set_action_on_compare_event(generator,
+        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator, MCPWM_GEN_ACTION_LOW));
 
-        // Create a generator for each joint
-        mcpwm_generator_config_t generator_config = {
-            .gen_gpio_num = servo_pins[i],
-            .flags.invert_pwm = false
-        };
-        mcpwm_new_generator(operators[operator_index], &generator_config, &generators[i]);
-
-        // Set PWM signal actions
-        mcpwm_generator_set_action_on_timer_event(generators[i],
-            MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
-        mcpwm_generator_set_action_on_compare_event(generators[i],
-            MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparators[i], MCPWM_GEN_ACTION_LOW));
-    }
-
-    // Start the timer
-    mcpwm_timer_enable(timers[0]);
-    mcpwm_timer_start_stop(timers[0], MCPWM_TIMER_START_NO_STOP);
+    // Start timer
+    mcpwm_timer_enable(timer);
+    mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP);
 }
 
-
+// Subscription callback function
 void snekbot_joint_state_callback(const void * msgin)
 {
     const sensor_msgs__msg__JointState * msg = (const sensor_msgs__msg__JointState *)msgin;
@@ -150,32 +124,11 @@ void snekbot_joint_state_callback(const void * msgin)
     }
 
     printf("Received Joint States:\n");
-
-    // Iterate through all received joint states
     for (size_t i = 0; i < msg->position.size; i++) {
         printf("  Joint %zu (%s): %f\n", i, msg->name.data[i].data, msg->position.data[i]);
-
-        // Check the joint name and set the corresponding servo angle
-        if (strcmp(msg->name.data[i].data, "joint_1") == 0) {
-            set_servo_angle_radians(0, (float)msg->position.data[i]);  // JOINT_1
-        }
-        else if (strcmp(msg->name.data[i].data, "joint_2") == 0) {
-            set_servo_angle_radians(1, (float)msg->position.data[i]);  // JOINT_2
-        }
-        else if (strcmp(msg->name.data[i].data, "joint_3") == 0) {
-            set_servo_angle_radians(2, (float)msg->position.data[i]);  // JOINT_3
-        }
-        else if (strcmp(msg->name.data[i].data, "joint_4") == 0) {
-            set_servo_angle_radians(3, (float)msg->position.data[i]);  // JOINT_4
-        }
-        else if (strcmp(msg->name.data[i].data, "joint_5") == 0) {
-            set_servo_angle_radians(4, (float)msg->position.data[i]);  // JOINT_5
-        }
-        else if (strcmp(msg->name.data[i].data, "joint_6") == 0) {
-            set_servo_angle_radians(5, (float)msg->position.data[i]);  // JOINT_6
-        }
-        else if (strcmp(msg->name.data[i].data, "gripper") == 0) {
-            set_servo_angle_radians(6, (float)msg->position.data[i]);  // JOINT_G (Gripper)
+        if (strcmp(msg->name.data[i].data, "gripper") == 0) {
+            printf("  fuck ye %zu (%s): %f\n", i, msg->name.data[i].data, msg->position.data[i]);
+            set_servo_angle_radians((float)msg->position.data[i]);
         }
     }
 }
