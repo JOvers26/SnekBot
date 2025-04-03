@@ -30,6 +30,14 @@
 rcl_subscription_t snekbot_joint_state_subscriber;
 sensor_msgs__msg__JointState recv_joint_state_msg;
 
+
+mcpwm_cmpr_handle_t comparators[NUM_JOINTS];
+mcpwm_timer_handle_t timers[NUM_JOINTS];
+mcpwm_oper_handle_t operators[NUM_JOINTS];
+mcpwm_gen_handle_t generators[NUM_JOINTS];
+
+const int servo_pins[NUM_JOINTS] = {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G};
+
 #define JOINT_1 1
 #define JOINT_2 2
 #define JOINT_3 42
@@ -76,14 +84,6 @@ static void set_servo_angle_radians(int joint, float radians) {
     uint32_t angle = radians_to_angle(radians);
     set_servo_angle(joint, angle);
 }
-
-
-mcpwm_cmpr_handle_t comparators[NUM_JOINTS];
-mcpwm_timer_handle_t timers[NUM_JOINTS];
-mcpwm_oper_handle_t operators[NUM_JOINTS];
-mcpwm_gen_handle_t generators[NUM_JOINTS];
-
-const int servo_pins[NUM_JOINTS] = {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G};
 
 static void setup_pwm(void) {
     for (int i = 0; i < NUM_JOINTS; i++) {
