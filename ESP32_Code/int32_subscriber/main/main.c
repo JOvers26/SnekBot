@@ -245,10 +245,7 @@ void snekbot_joint_state_callback(const void * msgin)
         }
         else if (strcmp(msg->name.data[i].data, "joint_2") == 0) {
             set_servo_angle_radians(comparator02, (float)msg->position.data[i]);
-        }
-        else if (strcmp(msg->name.data[i].data, "joint_3") == 0) {
-            set_servo_angle_radians(comparator03, (float)msg->position.data[i]);
-        }
+        }        
     }
 }
 
