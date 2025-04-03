@@ -32,7 +32,7 @@ sensor_msgs__msg__JointState recv_joint_state_msg;
 
 
 mcpwm_cmpr_handle_t comparators[NUM_JOINTS];
-mcpwm_timer_handle_t timers[NUM_JOINTS];
+mcpwm_timer_handle_t timer;  // Single timer for all servos
 mcpwm_oper_handle_t operators[NUM_JOINTS];
 mcpwm_gen_handle_t generators[NUM_JOINTS];
 
@@ -88,30 +88,36 @@ static void set_servo_angle_radians(int joint, float radians) {
 }
 
 static void setup_pwm(void) {
+    // Create only one timer
+    mcpwm_timer_config_t timer_config = {
+        .group_id = 0,  
+        .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
+        .resolution_hz = 1000000,  // 1 MHz resolution
+        .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
+        .period_ticks = 20000  // 50Hz PWM
+    };
+    if (mcpwm_new_timer(&timer_config, &timer) != ESP_OK) {
+        printf("Failed to create MCPWM timer\n");
+        return;
+    }
+
     for (int i = 0; i < NUM_JOINTS; i++) {
-        // Configure a new timer for each joint
-        mcpwm_timer_config_t timer_config = {
-            .group_id = 0,  
-            .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
-            .resolution_hz = 1000000,  
-            .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
-            .period_ticks = 20000  // 50Hz PWM
-        };
-        mcpwm_new_timer(&timer_config, &timers[i]);
-
-        // Create a new operator for each servo
+        // Create one operator per joint
         mcpwm_operator_config_t operator_config = {.group_id = 0};
-        mcpwm_new_operator(&operator_config, &operators[i]);
-        mcpwm_operator_connect_timer(operators[i], timers[i]);
+        if (mcpwm_new_operator(&operator_config, &operators[i]) != ESP_OK) {
+            printf("Failed to create operator for joint %d\n", i);
+            continue;
+        }
+        mcpwm_operator_connect_timer(operators[i], timer);  // Attach all operators to the same timer
 
-        // Create a comparator for each servo
+        // Create a comparator
         mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
         if (mcpwm_new_comparator(operators[i], &comparator_config, &comparators[i]) != ESP_OK) {
             printf("Failed to create comparator for joint %d\n", i);
             continue;
         }
 
-        // Create a generator for each servo
+        // Create a generator
         mcpwm_generator_config_t generator_config = {
             .gen_gpio_num = servo_pins[i],
             .flags.invert_pwm = false
@@ -126,12 +132,13 @@ static void setup_pwm(void) {
             MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
         mcpwm_generator_set_action_on_compare_event(generators[i],
             MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparators[i], MCPWM_GEN_ACTION_LOW));
-
-        // Enable and start timer
-        mcpwm_timer_enable(timers[i]);
-        mcpwm_timer_start_stop(timers[i], MCPWM_TIMER_START_NO_STOP);
     }
+
+    // Enable and start the shared timer
+    mcpwm_timer_enable(timer);
+    mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP);
 }
+
 
 
 
