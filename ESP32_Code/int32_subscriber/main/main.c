@@ -103,9 +103,6 @@ static void setup_pwm(void) {
     // Timer 1 setup (for JOINT_4, JOINT_5)
     mcpwm_new_timer(&timer_config, &timer1);
 
-    // Timer 2 setup (for JOINT_6, JOINT_G)
-    mcpwm_new_timer(&timer_config, &timer2);
-
     // Operator setup for Timer 0
     mcpwm_operator_config_t operator_config = {.group_id = 0};
     mcpwm_new_operator(&operator_config, &operator0);
@@ -114,10 +111,6 @@ static void setup_pwm(void) {
     // Operator setup for Timer 1
     mcpwm_new_operator(&operator_config, &operator1);
     mcpwm_operator_connect_timer(operator1, timer1);
-
-    // Operator setup for Timer 2
-    mcpwm_new_operator(&operator_config, &operator2);
-    mcpwm_operator_connect_timer(operator2, timer2);
 
     // Comparator and generator setup for each joint and timer
 
@@ -148,18 +141,6 @@ static void setup_pwm(void) {
     mcpwm_generator_set_action_on_compare_event(generator02,
         MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator02, MCPWM_GEN_ACTION_LOW));
 
-    // JOINT_3
-    mcpwm_comparator_config_t comparator03_config = {.flags.update_cmp_on_tez = true};
-    mcpwm_new_comparator(operator0, &comparator03_config, &comparator03);
-    mcpwm_generator_config_t generator03_config = {
-        .gen_gpio_num = JOINT_3,
-        .flags.invert_pwm = false
-    };
-    mcpwm_new_generator(operator0, &generator03_config, &generator03);
-    mcpwm_generator_set_action_on_timer_event(generator03,
-        MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
-    mcpwm_generator_set_action_on_compare_event(generator03,
-        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator03, MCPWM_GEN_ACTION_LOW));
 
     // Start all timers
     mcpwm_timer_enable(timer0);
