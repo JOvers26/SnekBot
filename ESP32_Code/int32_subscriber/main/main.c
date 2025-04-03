@@ -30,10 +30,10 @@
 rcl_subscription_t snekbot_joint_state_subscriber;
 sensor_msgs__msg__JointState recv_joint_state_msg;
 
-#define SERVO_GPIO 2  // Change to the GPIO pin you are using
+#define JOINT_6 2  // Change to the GPIO pin you are using
 #define SERVO_MIN_PULSEWIDTH_US 500   // Minimum pulse width (0°)
 #define SERVO_MAX_PULSEWIDTH_US 2500  // Maximum pulse width (180°)
-#define SERVO_MAX_DEGREE 180          // Maximum degree of rotation
+#define SERVO_MAX_DEGREE 270          // Maximum degree of rotation
 #define PI 3.14159265359               // Define constant PI
 
 mcpwm_cmpr_handle_t comparator;
@@ -92,7 +92,7 @@ static void setup_pwm(void) {
 
     // Generator setup
     mcpwm_generator_config_t generator_config = {
-        .gen_gpio_num = SERVO_GPIO,
+        .gen_gpio_num = JOINT_6,
         .flags.invert_pwm = false
     };
     mcpwm_new_generator(operator, &generator_config, &generator);

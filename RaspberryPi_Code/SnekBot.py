@@ -55,7 +55,7 @@ class SnekBot(ERobot):
         qt = rtb.jtraj(start, end, steps)
         for q in qt.q:
             self.q = q
-            time.sleep(0.5)
+            time.sleep(0.05)
             self.publish_joint_state()  # Publish joint states
         self.set_position()
 
