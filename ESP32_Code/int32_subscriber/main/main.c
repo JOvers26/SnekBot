@@ -169,7 +169,7 @@ static void setup_pwm(void) {
     // Timer 1 (for JOINT_4, JOINT_5)
     // JOINT_4
     mcpwm_comparator_config_t comparator4_config = {.flags.update_cmp_on_tez = true};
-    mcpwm_new_comparator(operator1, &comparator4_config, &comparator04);
+    mcpwm_new_comparator(operator1, &comparator4_config, &comparator11);
     mcpwm_generator_config_t generator4_config = {
         .gen_gpio_num = JOINT_4,
         .flags.invert_pwm = false
@@ -182,12 +182,12 @@ static void setup_pwm(void) {
 
     // JOINT_5
     mcpwm_comparator_config_t comparator5_config = {.flags.update_cmp_on_tez = true};
-    mcpwm_new_comparator(operator1, &comparator5_config, &comparator05);
+    mcpwm_new_comparator(operator1, &comparator5_config, &comparator12);
     mcpwm_generator_config_t generator5_config = {
         .gen_gpio_num = JOINT_5,
         .flags.invert_pwm = false
     };
-    mcpwm_new_generator(operator1, &generator5_config, &generator05);
+    mcpwm_new_generator(operator1, &generator5_config, &generator21);
     mcpwm_generator_set_action_on_timer_event(generator05,
         MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
     mcpwm_generator_set_action_on_compare_event(generator05,
@@ -196,7 +196,7 @@ static void setup_pwm(void) {
     // Timer 2 (for JOINT_6, JOINT_G)
     // JOINT_6
     mcpwm_comparator_config_t comparator6_config = {.flags.update_cmp_on_tez = true};
-    mcpwm_new_comparator(operator2, &comparator6_config, &comparator06);
+    mcpwm_new_comparator(operator2, &comparator6_config, &comparator22);
     mcpwm_generator_config_t generator6_config = {
         .gen_gpio_num = JOINT_6,
         .flags.invert_pwm = false
