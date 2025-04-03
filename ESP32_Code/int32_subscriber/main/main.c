@@ -85,53 +85,54 @@ mcpwm_gen_handle_t generators[NUM_JOINTS];
 const int servo_pins[NUM_JOINTS] = {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G};
 
 static void setup_pwm(void) {
-    // Timer 0 for Joints 1-6, Timer 1 for Gripper
+    // Configure a single timer for all servos (50Hz frequency)
     mcpwm_timer_config_t timer_config = {
         .group_id = 0,  
         .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
         .resolution_hz = 1000000,  
         .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
-        .period_ticks = 20000  // 50Hz PWM
+        .period_ticks = 20000  // 50Hz PWM (20ms period)
     };
 
-    // Timer 0 for Joints 1-6
-    mcpwm_new_timer(&timer_config, &timers[0]);
+    mcpwm_new_timer(&timer_config, &timers[0]);  // Single timer for all servos
 
-    // Timer 1 for the Gripper (Joint 7)
-    mcpwm_new_timer(&timer_config, &timers[1]);
-
-    // Create operators for Joints 1-3 (Operator 0), Joints 4-6 (Operator 1), and Gripper (Operator 2)
+    // Create 2 operators: One for joints 1-6, one for the gripper
     mcpwm_operator_config_t operator_config = {.group_id = 0};
     
-    mcpwm_new_operator(&operator_config, &operators[0]);  // Operator 0 (Joints 1-3)
-    mcpwm_new_operator(&operator_config, &operators[1]);  // Operator 1 (Joints 4-6)
-    mcpwm_new_operator(&operator_config, &operators[2]);  // Operator 2 (Gripper)
+    mcpwm_new_operator(&operator_config, &operators[0]);  // Operator 0 (Joints 1-6)
+    mcpwm_new_operator(&operator_config, &operators[1]);  // Operator 1 (Gripper)
 
-    // Connect each operator to the respective timers
-    mcpwm_operator_connect_timer(operators[0], timers[0]);  // Operator 0 (Joints 1-3) -> Timer 0
-    mcpwm_operator_connect_timer(operators[1], timers[0]);  // Operator 1 (Joints 4-6) -> Timer 0
-    mcpwm_operator_connect_timer(operators[2], timers[1]);  // Operator 2 (Gripper) -> Timer 1
+    // Connect operators to the same timer
+    mcpwm_operator_connect_timer(operators[0], timers[0]);
+    mcpwm_operator_connect_timer(operators[1], timers[0]);
 
     // Create comparators and generators for each joint
     for (int i = 0; i < NUM_JOINTS; i++) {
-        mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
-        mcpwm_new_comparator(operators[i / 3], &comparator_config, &comparators[i]);
+        int operator_index = (i < 6) ? 0 : 1;  // First 6 joints use Operator 0, Gripper uses Operator 1
 
+        // Create a comparator for each joint
+        mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
+        mcpwm_new_comparator(operators[operator_index], &comparator_config, &comparators[i]);
+
+        // Create a generator for each joint
         mcpwm_generator_config_t generator_config = {
             .gen_gpio_num = servo_pins[i],
             .flags.invert_pwm = false
         };
-        mcpwm_new_generator(operators[i / 3], &generator_config, &generators[i]);
+        mcpwm_new_generator(operators[operator_index], &generator_config, &generators[i]);
 
+        // Set PWM signal actions
         mcpwm_generator_set_action_on_timer_event(generators[i],
             MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
         mcpwm_generator_set_action_on_compare_event(generators[i],
             MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparators[i], MCPWM_GEN_ACTION_LOW));
-
-        mcpwm_timer_enable(timers[i / 3]);  // Timer 0 for joints 1-6, Timer 1 for gripper
-        mcpwm_timer_start_stop(timers[i / 3], MCPWM_TIMER_START_NO_STOP);
     }
+
+    // Start the timer
+    mcpwm_timer_enable(timers[0]);
+    mcpwm_timer_start_stop(timers[0], MCPWM_TIMER_START_NO_STOP);
 }
+
 
 void snekbot_joint_state_callback(const void * msgin)
 {
