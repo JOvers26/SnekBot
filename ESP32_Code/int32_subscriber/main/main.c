@@ -3,7 +3,7 @@
 #include "freertos/task.h"
 #include "driver/mcpwm_prelude.h"
 
-#define SERVO_GPIO 18  // Change to the GPIO pin you are using
+#define SERVO_GPIO 2  // Change to the GPIO pin you are using
 #define SERVO_MIN_PULSEWIDTH_US 500   // Minimum pulse width (0°)
 #define SERVO_MAX_PULSEWIDTH_US 2500  // Maximum pulse width (180°)
 #define SERVO_MAX_DEGREE 180          // Maximum degree of rotation
