@@ -61,15 +61,18 @@ void app_main(void) {
     mcpwm_timer_enable(timer);
     mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP);
 
-    // Servo movement loop
+    // Servo movement loop for smooth transitions
     while (1) {
-        for (int angle = 0; angle <= 180; angle += 5) {
+        // Move from 0 to 180 degrees
+        for (int angle = 0; angle <= 180; angle++) {
             set_servo_angle(angle);
-            vTaskDelay(pdMS_TO_TICKS(100)); 
+            vTaskDelay(pdMS_TO_TICKS(15));  // Smaller delay for smoother movement
         }
-        for (int angle = 180; angle >= 0; angle -= 5) {
+
+        // Move from 180 to 0 degrees
+        for (int angle = 180; angle >= 0; angle--) {
             set_servo_angle(angle);
-            vTaskDelay(pdMS_TO_TICKS(100)); 
+            vTaskDelay(pdMS_TO_TICKS(15));  // Smaller delay for smoother movement
         }
     }
 }
