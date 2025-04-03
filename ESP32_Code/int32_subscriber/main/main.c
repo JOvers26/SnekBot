@@ -83,10 +83,10 @@ static uint32_t angle_to_pulsewidth(uint32_t angle) {
 }
 
 // Move servo based on radians input
-static void set_servo_angle_radians(float radians) {
+static void set_servo_angle_radians(mcpwm_cmpr_handle_t comparator, float radians) {
     uint32_t angle = radians_to_angle(radians);
     uint32_t pulse_width = angle_to_pulsewidth(angle);
-    mcpwm_comparator_set_compare_value(comparator01, pulse_width);
+    mcpwm_comparator_set_compare_value(comparator, pulse_width);
 }
 
 static void setup_pwm(void) {
@@ -242,7 +242,7 @@ void snekbot_joint_state_callback(const void * msgin)
         printf("  Joint %zu (%s): %f\n", i, msg->name.data[i].data, msg->position.data[i]);
         if (strcmp(msg->name.data[i].data, "joint_1") == 0) {
             printf("  fuck ye %zu (%s): %f\n", i, msg->name.data[i].data, msg->position.data[i]);
-            set_servo_angle_radians((float)msg->position.data[i]);
+            set_servo_angle_radians(comparator01, (float)msg->position.data[i]);
         }
     }
 }
