@@ -21,6 +21,7 @@ def apply_deadzone(value, threshold=0.3):
 snekbot = SnekBot()
 print(snekbot)
 time.sleep(1)
+print("Moving from init to stance")
 snekbot.move_to_joint_position(snekbot.configs["init"], snekbot.configs["stance"], 200)
 
 print(snekbot.q)
