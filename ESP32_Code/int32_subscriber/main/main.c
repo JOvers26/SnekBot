@@ -105,11 +105,6 @@ static void setup_pwm(void) {
     mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP);
 }
 
-// Loop to smoothly move the servo back and forth
-static void move_servo_loop(float radians) {
-    set_servo_angle_radians(radians);
-}
-
 // Subscription callback function
 void snekbot_joint_state_callback(const void * msgin)
 {
@@ -125,6 +120,7 @@ void snekbot_joint_state_callback(const void * msgin)
         printf("  Joint %zu (%s): %f\n", i, msg->name.data[i].data, msg->position.data[i]);
         if (strcmp(msg->name.data[i].data, "gripper") == 0) {
             printf("  fuck ye %zu (%s): %f\n", i, msg->name.data[i].data, msg->position.data[i]);
+            set_servo_angle_radians(msg->name.data[i].data)
         }
     }
 }
