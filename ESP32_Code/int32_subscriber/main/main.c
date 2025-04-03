@@ -122,8 +122,7 @@ void snekbot_joint_state_callback(const void * msgin)
         printf("  Joint %zu (%s): %f\n", i, msg->name.data[i].data, msg->position.data[i]);
         if (strcmp(msg->name.data[i].data, "gripper") == 0) {
             printf("  fuck ye %zu (%s): %f\n", i, msg->name.data[i].data, msg->position.data[i]);
-            float gripper_angle = msg->position.data[i];
-            set_servo_angle_radians(gripper_angle);
+            set_servo_angle_radians((float)msg->position.data[i]);
         }
     }
 }
