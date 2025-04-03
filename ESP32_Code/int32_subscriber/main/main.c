@@ -1,45 +1,88 @@
+#include <stdio.h>
 #include "freertos/FreeRTOS.h"
 #include "freertos/task.h"
-#include "driver/ledc.h"
+#include "driver/mcpwm_prelude.h"
+#include "esp_log.h"
 
-#define SERVO_PIN 2
-#define SERVO_FREQ 50 // Servo PWM frequency
-#define LEDC_CHANNEL LEDC_CHANNEL_0
-#define LEDC_TIMER LEDC_TIMER_0
+#define SERVO_GPIO 2  // Change to the GPIO pin you are using
+#define SERVO_MIN_PULSEWIDTH_US 500   // Minimum pulse width in microseconds (0°)
+#define SERVO_MAX_PULSEWIDTH_US 2500  // Maximum pulse width in microseconds (180°)
+#define SERVO_MAX_DEGREE 180          // Maximum degree of rotation
 
-void setServoAngle(int angle) {
-    int dutyCycle = (angle * (2400 - 500) / 180) + 500; // Convert angle to duty cycle (500-2400us for 0-180 degrees)
-    uint32_t duty = (dutyCycle * 16384) / 20000; // Scale to LEDC resolution (assuming 14-bit)
-    ledc_set_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL, duty);
-    ledc_update_duty(LEDC_LOW_SPEED_MODE, LEDC_CHANNEL);
+static const char *TAG = "SERVO";
+
+mcpwm_cmpr_handle_t comparator;
+mcpwm_timer_handle_t timer;
+mcpwm_oper_handle_t operator;
+
+/**
+ * @brief Convert an angle in degrees to a pulse width in microseconds
+ */
+static uint32_t angle_to_pulsewidth(uint32_t angle) {
+    return SERVO_MIN_PULSEWIDTH_US + (angle * (SERVO_MAX_PULSEWIDTH_US - SERVO_MIN_PULSEWIDTH_US) / SERVO_MAX_DEGREE);
 }
 
-void app_main() {
-    ledc_timer_config_t timerConfig = {
-        .speed_mode = LEDC_LOW_SPEED_MODE,
-        .duty_resolution = LEDC_TIMER_14_BIT, // Change to 14-bit resolution
-        .timer_num = LEDC_TIMER,
-        .freq_hz = SERVO_FREQ,
-        .clk_cfg = LEDC_AUTO_CLK
-    };
-    ledc_timer_config(&timerConfig);
+/**
+ * @brief Set the servo to a specific angle
+ */
+static void set_servo_angle(uint32_t angle) {
+    if (angle > SERVO_MAX_DEGREE) angle = SERVO_MAX_DEGREE;
+    uint32_t pulse_width = angle_to_pulsewidth(angle);
+    ESP_ERROR_CHECK(mcpwm_comparator_set_compare_value(comparator, pulse_width));
+    ESP_LOGI(TAG, "Servo moved to %d degrees (Pulse Width: %dus)", angle, pulse_width);
+}
 
-    ledc_channel_config_t channelConfig = {
-        .gpio_num = SERVO_PIN,
-        .speed_mode = LEDC_LOW_SPEED_MODE,
-        .channel = LEDC_CHANNEL,
-        .intr_type = LEDC_INTR_DISABLE,
-        .timer_sel = LEDC_TIMER,
-        .duty = 0,
-        .hpoint = 0
-    };
-    ledc_channel_config(&channelConfig);
+void app_main(void) {
+    ESP_LOGI(TAG, "Initializing servo...");
 
+    // Timer configuration
+    mcpwm_timer_config_t timer_config = {
+        .group_id = 0,
+        .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
+        .resolution_hz = 1000000,  // 1 MHz resolution for microsecond precision
+        .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
+        .period_ticks = 20000  // 20ms period (50Hz PWM for servo)
+    };
+    ESP_ERROR_CHECK(mcpwm_new_timer(&timer_config, &timer));
+
+    // Operator configuration
+    mcpwm_operator_config_t operator_config = {.group_id = 0};
+    ESP_ERROR_CHECK(mcpwm_new_operator(&operator_config, &operator));
+
+    // Connect operator to timer
+    ESP_ERROR_CHECK(mcpwm_operator_connect_timer(operator, timer));
+
+    // Comparator configuration
+    mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
+    ESP_ERROR_CHECK(mcpwm_new_comparator(operator, &comparator_config, &comparator));
+
+    // Generator configuration
+    mcpwm_gen_handle_t generator;
+    mcpwm_generator_config_t generator_config = {
+        .gen_gpio_num = SERVO_GPIO,
+        .flags.invert_pwm = false
+    };
+    ESP_ERROR_CHECK(mcpwm_new_generator(operator, &generator_config, &generator));
+
+    // Set generator to produce PWM
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_timer_event(generator,
+        MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH)));
+    ESP_ERROR_CHECK(mcpwm_generator_set_action_on_compare_event(generator,
+        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator, MCPWM_GEN_ACTION_LOW)));
+
+    // Start the timer
+    ESP_ERROR_CHECK(mcpwm_timer_enable(timer));
+    ESP_ERROR_CHECK(mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP));
+
+    // Servo movement loop
     while (1) {
-        setServoAngle(0); // Move to 0 degrees
-        vTaskDelay(pdMS_TO_TICKS(5000)); // Wait 5 seconds
-
-        setServoAngle(180); // Move to 180 degrees
-        vTaskDelay(pdMS_TO_TICKS(5000)); // Wait 5 seconds
+        for (int angle = 0; angle <= 180; angle += 5) {
+            set_servo_angle(angle);
+            vTaskDelay(pdMS_TO_TICKS(100));  // Wait 100ms
+        }
+        for (int angle = 180; angle >= 0; angle -= 5) {
+            set_servo_angle(angle);
+            vTaskDelay(pdMS_TO_TICKS(100));  // Wait 100ms
+        }
     }
 }
