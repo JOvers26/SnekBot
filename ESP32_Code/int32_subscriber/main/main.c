@@ -36,7 +36,7 @@ mcpwm_timer_handle_t timers[NUM_JOINTS];
 mcpwm_oper_handle_t operators[NUM_JOINTS];
 mcpwm_gen_handle_t generators[NUM_JOINTS];
 
-const int servo_pins[NUM_JOINTS] = {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G};
+
 
 #define JOINT_1 1
 #define JOINT_2 2
@@ -45,6 +45,8 @@ const int servo_pins[NUM_JOINTS] = {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5,
 #define JOINT_5 40
 #define JOINT_6 39
 #define JOINT_G 38
+
+const int servo_pins[NUM_JOINTS] = {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G};
 
 #define JOINTS_GPIO {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G}
 #define SERVO_MIN_PULSEWIDTH_US 500   // Minimum pulse width (0°)
