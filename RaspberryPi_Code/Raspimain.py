@@ -40,7 +40,7 @@ while running:
         snekbot.move_to_joint_position(snekbot.q, snekbot.configs["stance"], 200)
 
     if joystick:
-        x_axis = -apply_deadzone(joystick.get_axis(0))
+        x_axis = apply_deadzone(joystick.get_axis(0))
         y_axis = apply_deadzone(joystick.get_axis(1))
         R = apply_deadzone(joystick.get_axis(3))
         P = apply_deadzone(joystick.get_axis(4))
