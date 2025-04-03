@@ -45,11 +45,17 @@ sensor_msgs__msg__JointState recv_joint_state_msg;
 #define SERVO_MAX_DEGREE 270          // Maximum degree of rotation
 #define PI 3.14159265359               // Define constant PI
 
-// Resources for PWM control
-mcpwm_cmpr_handle_t comparators[NUM_JOINTS];
-mcpwm_timer_handle_t timers[2];  // 2 timers
-mcpwm_oper_handle_t operators[3];  // 3 operators
-mcpwm_gen_handle_t generators[NUM_JOINTS];
+// Define MCPWM units and timers for each joint
+mcpwm_unit_t units[] = {MCPWM_UNIT_0, MCPWM_UNIT_0, MCPWM_UNIT_0, MCPWM_UNIT_0, MCPWM_UNIT_1, MCPWM_UNIT_1, MCPWM_UNIT_1};
+mcpwm_timer_t timers[] = {MCPWM_TIMER_0, MCPWM_TIMER_1, MCPWM_TIMER_2, MCPWM_TIMER_0, MCPWM_TIMER_1, MCPWM_TIMER_2, MCPWM_TIMER_0};
+mcpwm_oper_t operators[] = {MCPWM_OPR_A, MCPWM_OPR_B, MCPWM_OPR_A, MCPWM_OPR_B, MCPWM_OPR_A, MCPWM_OPR_B, MCPWM_OPR_A};
+
+mcpwm_comparator_handle_t comparators[NUM_JOINTS];
+
+for (int i = 0; i < NUM_JOINTS; i++) {
+    mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
+    ESP_ERROR_CHECK(mcpwm_new_comparator(units[i], &comparator_config, &comparators[i]));
+}
 
 const int servo_pins[NUM_JOINTS] = {JOINT_1, JOINT_2, JOINT_3, JOINT_4, JOINT_5, JOINT_6, JOINT_G};
 
