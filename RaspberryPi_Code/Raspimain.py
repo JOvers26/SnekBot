@@ -24,8 +24,6 @@ time.sleep(1)
 print("Moving from init to stance")
 snekbot.move_to_joint_position(snekbot.configs["init"], snekbot.configs["stance"], 200)
 
-print(snekbot.q)
-
 speed_factor = 0.05
 running = True
 
