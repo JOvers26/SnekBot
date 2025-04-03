@@ -42,10 +42,10 @@ sensor_msgs__msg__JointState recv_joint_state_msg;
 #define SERVO_MAX_DEGREE 270          // Maximum degree of rotation
 #define PI 3.14159265359               // Define constant PI
 
-mcpwm_cmpr_handle_t comparator;
-mcpwm_timer_handle_t timer;
-mcpwm_oper_handle_t operator;
-mcpwm_gen_handle_t generator;
+mcpwm_cmpr_handle_t comparator1;
+mcpwm_timer_handle_t timer1;
+mcpwm_oper_handle_t operator1;
+mcpwm_gen_handle_t generator1;
 
 static uint32_t radians_to_angle(float radians) {
     // Map radians to degrees where -PI -> 0° and PI -> 180°
@@ -66,7 +66,7 @@ static uint32_t angle_to_pulsewidth(uint32_t angle) {
 // Move servo to a specific angle in degrees
 static void set_servo_angle(uint32_t angle) {
     uint32_t pulse_width = angle_to_pulsewidth(angle);
-    mcpwm_comparator_set_compare_value(comparator, pulse_width);
+    mcpwm_comparator_set_compare_value(comparator1, pulse_width);
 }
 
 // Move servo based on radians input
@@ -85,32 +85,32 @@ static void setup_pwm(void) {
         .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
         .period_ticks = 20000  // 50Hz PWM
     };
-    mcpwm_new_timer(&timer_config, &timer);
+    mcpwm_new_timer(&timer_config, &timer1);
 
     // Operator setup
     mcpwm_operator_config_t operator_config = {.group_id = 0};
-    mcpwm_new_operator(&operator_config, &operator);
-    mcpwm_operator_connect_timer(operator, timer);
+    mcpwm_new_operator(&operator_config, &operator1);
+    mcpwm_operator_connect_timer(operator1, timer1);
 
     // Comparator setup
     mcpwm_comparator_config_t comparator_config = {.flags.update_cmp_on_tez = true};
-    mcpwm_new_comparator(operator, &comparator_config, &comparator);
+    mcpwm_new_comparator(operator1, &comparator_config, &comparator1);
 
     // Generator setup
     mcpwm_generator_config_t generator_config = {
         .gen_gpio_num = JOINT_1,
         .flags.invert_pwm = false
     };
-    mcpwm_new_generator(operator, &generator_config, &generator);
+    mcpwm_new_generator(operator1, &generator_config, &generator1);
 
-    mcpwm_generator_set_action_on_timer_event(generator,
+    mcpwm_generator_set_action_on_timer_event(generator1,
         MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
-    mcpwm_generator_set_action_on_compare_event(generator,
-        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator, MCPWM_GEN_ACTION_LOW));
+    mcpwm_generator_set_action_on_compare_event(generator1,
+        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator1, MCPWM_GEN_ACTION_LOW));
 
     // Start timer
-    mcpwm_timer_enable(timer);
-    mcpwm_timer_start_stop(timer, MCPWM_TIMER_START_NO_STOP);
+    mcpwm_timer_enable(timer1);
+    mcpwm_timer_start_stop(timer1, MCPWM_TIMER_START_NO_STOP);
 }
 
 // Subscription callback function
