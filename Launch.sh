@@ -3,31 +3,42 @@
 # Source ROS 2 environment
 source /opt/ros/jazzy/setup.bash
 
-echo "🚀 Launching the micro_ros_agent..."
+# Navigate to the ROS 2 workspace
+echo "🔧 Navigating to ROS 2 workspace..."
+cd ~/SnekBot/ros2_ws || { echo "❌ Failed to navigate to ros2_ws directory."; exit 1; }
 
-# Attempt to start micro_ros_agent
-ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888 &
-AGENT_PID=$!
+# Build the workspace
+echo "🚀 Running colcon build..."
+colcon build --symlink-install
 
-# Allow time for the agent to initialize
+# Source the setup file after building
+echo "🔧 Sourcing the setup file..."
+source install/setup.bash
+
+# Launching micro_ros_agent
+echo "🚀 Launching micro_ros_agent..."
+ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888 & 
+MICRO_PID=$!
+
+# Allow a short time to check if the agent started
 sleep 2
 
-# Verify the process is running
-if ! kill -0 $AGENT_PID 2>/dev/null; then
+# Check if the micro-ROS agent failed
+if ! kill -0 $MICRO_PID 2>/dev/null; then
     echo "❌ micro_ros_agent failed to start."
-    echo "🔧 Running build_micro_ros.sh to resolve issues..."
+    echo "🔧 Running build_micro_ros.sh and trying again..."
 
-    # Terminate any lingering process (if somehow partially running)
-    kill $AGENT_PID 2>/dev/null
+    # Kill any leftover process
+    kill $MICRO_PID 2>/dev/null
 
-    # Execute the build script to rebuild the environment
+    # Run the build script
     bash ~/ros2_ws/src/build_micro_ros.sh
 
-    echo "🔁 Retrying micro_ros_agent launch..."
+    echo "🔁 Retrying micro_ros_agent..."
 
-    # Relaunch the agent
+    # Retry launching micro-ROS agent
     ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888 &
 fi
 
-# Maintain script until background process ends
+# Wait for background processes
 wait
