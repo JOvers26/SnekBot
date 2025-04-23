@@ -3,34 +3,31 @@
 # Source ROS 2 environment
 source /opt/ros/jazzy/setup.bash
 
-echo "🚀 Launching foxglove_bridge and micro_ros_agent..."
+echo "🚀 Launching micro_ros_agent..."
 
-# Try running both processes
-ros2 run foxglove_bridge foxglove_bridge & 
-FOX_PID=$!
-ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888 & 
-MICRO_PID=$!
+# Attempt to start micro_ros_agent
+ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888 &
+AGENT_PID=$!
 
-# Allow a short time for both to initialize
+# Allow time for the agent to initialize
 sleep 2
 
-# Check if either failed
-if ! kill -0 $FOX_PID 2>/dev/null || ! kill -0 $MICRO_PID 2>/dev/null; then
-    echo "❌ One or both processes failed to start."
-    echo "🔧 Running build_micro_ros.sh and trying again..."
+# Verify the process is running
+if ! kill -0 $AGENT_PID 2>/dev/null; then
+    echo "❌ micro_ros_agent failed to start."
+    echo "🔧 Running build_micro_ros.sh to resolve issues..."
 
-    # Kill any running leftover processes
-    kill $FOX_PID $MICRO_PID 2>/dev/null
+    # Terminate any lingering process (if somehow partially running)
+    kill $AGENT_PID 2>/dev/null
 
-    # Run your build script
+    # Execute the build script to rebuild the environment
     bash ~/ros2_ws/src/build_micro_ros.sh
 
-    echo "🔁 Retrying processes..."
+    echo "🔁 Retrying micro_ros_agent launch..."
 
-    # Retry launching both
-    ros2 run foxglove_bridge foxglove_bridge & 
+    # Relaunch the agent
     ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888 &
 fi
 
-# Wait for background processes
+# Maintain script until background process ends
 wait
