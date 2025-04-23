@@ -3,7 +3,7 @@
 # Source ROS 2 environment
 source /opt/ros/jazzy/setup.bash
 
-echo "🚀 Launching micro_ros_agent..."
+echo "🚀 Launching the micro_ros_agent..."
 
 # Attempt to start micro_ros_agent
 ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888 &
