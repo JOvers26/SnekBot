@@ -109,7 +109,7 @@ static void setup_pwm(void) {
     mcpwm_new_timer(&timer_config, &timer2);
 
     // Operator setup for Timer 0
-    mcpwm_operator_config_t operator_config = {.group_id = 0};
+    mcpwm_operator_config_t operator_config = {.group_id = 1};
     mcpwm_new_operator(&operator_config, &operator0);
     mcpwm_operator_connect_timer(operator0, timer0);
 
