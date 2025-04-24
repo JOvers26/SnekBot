@@ -36,7 +36,7 @@ sensor_msgs__msg__JointState recv_joint_state_msg;
 #define JOINT_4 41
 #define JOINT_5 40
 #define JOINT_6 39
-#define JOINT_G 35
+#define JOINT_G 38
 #define SERVO_MIN_PULSEWIDTH_US 500   // Minimum pulse width (0°)
 #define SERVO_MAX_PULSEWIDTH_US 2500  // Maximum pulse width (180°)
 #define SERVO_MAX_DEGREE 270          // Maximum degree of rotation
