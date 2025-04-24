@@ -27,7 +27,7 @@ time.sleep(1)
 print("Moving from init to stance")
 snekbot.move_to_joint_position(snekbot.configs["init"], snekbot.configs["stance"], 200)
 
-speed_factor = 0.05
+speed_factor = 0.01
 running = True
 
 theta = 0  # Variable controlled by triggers
