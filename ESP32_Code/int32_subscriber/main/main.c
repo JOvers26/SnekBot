@@ -65,6 +65,11 @@ mcpwm_cmpr_handle_t comparator22;
 mcpwm_gen_handle_t generator21;
 mcpwm_gen_handle_t generator22;
 
+mcpwm_timer_handle_t timer3;
+mcpwm_oper_handle_t operator3;
+mcpwm_cmpr_handle_t comparator31;
+mcpwm_gen_handle_t generator31;
+
 
 static uint32_t radians_to_angle(float radians) {
     // Map radians to degrees where -PI -> 0° and PI -> 180°
@@ -98,6 +103,15 @@ static void setup_pwm(void) {
         .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
         .period_ticks = 20000  // 50Hz PWM
     };
+
+    mcpwm_timer_config_t timer_config2 = {
+        .group_id = 1,
+        .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
+        .resolution_hz = 1000000,  
+        .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
+        .period_ticks = 20000  // 50Hz PWM
+    };
+
     mcpwm_new_timer(&timer_config, &timer0);
 
     // Timer 1 setup (for JOINT_4, JOINT_5)
@@ -105,6 +119,8 @@ static void setup_pwm(void) {
 
     // Timer 2 setup (for JOINT_6, JOINT_G)
     mcpwm_new_timer(&timer_config, &timer2);
+
+    mcpwm_new_timer(&timer_config2, &timer3);
 
     // Operator setup for Timer 0
     mcpwm_operator_config_t operator_config = {.group_id = 0};
@@ -150,7 +166,7 @@ static void setup_pwm(void) {
 
 
     // Timer 1 (for JOINT_4, JOINT_5)
-    // JOINT_4
+    // JOINT_3
     mcpwm_comparator_config_t comparator11_config = {.flags.update_cmp_on_tez = true};
     mcpwm_new_comparator(operator1, &comparator11_config, &comparator11);
     mcpwm_generator_config_t generator11_config = {
@@ -163,7 +179,7 @@ static void setup_pwm(void) {
     mcpwm_generator_set_action_on_compare_event(generator11,
         MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator11, MCPWM_GEN_ACTION_LOW));
 
-    // JOINT_5
+    // JOINT_4
     mcpwm_comparator_config_t comparator12_config = {.flags.update_cmp_on_tez = true};
     mcpwm_new_comparator(operator1, &comparator12_config, &comparator12);
     mcpwm_generator_config_t generator12_config = {
@@ -177,7 +193,7 @@ static void setup_pwm(void) {
         MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator12, MCPWM_GEN_ACTION_LOW));
 
     // Timer 2 (for JOINT_6, JOINT_G)
-    // JOINT_6
+    // JOINT_5
     mcpwm_comparator_config_t comparator21_config = {.flags.update_cmp_on_tez = true};
     mcpwm_new_comparator(operator2, &comparator21_config, &comparator21);
     mcpwm_generator_config_t generator21_config = {
@@ -190,7 +206,7 @@ static void setup_pwm(void) {
     mcpwm_generator_set_action_on_compare_event(generator21,
         MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator21, MCPWM_GEN_ACTION_LOW));
 
-    // JOINT_G (Gripper)
+    // JOINT_6 (Gripper)
     mcpwm_comparator_config_t comparator22_config = {.flags.update_cmp_on_tez = true};
     mcpwm_new_comparator(operator2, &comparator22_config, &comparator22);
     mcpwm_generator_config_t generator22_config = {
