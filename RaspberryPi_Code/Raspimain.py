@@ -50,9 +50,9 @@ while running:
 
         z_axis = 0
         if joystick.get_button(4):
-            z_axis = -0.2
+            z_axis = -0.3
         elif joystick.get_button(5):
-            z_axis = 0.2
+            z_axis = 0.3
 
         Y = 0
         hat = joystick.get_hat(0)
@@ -73,7 +73,7 @@ while running:
             snekbot.move_grippers(theta)
 
         step = np.array([z_axis * speed_factor, x_axis * speed_factor, y_axis * speed_factor, 
-                         P * 0.05 * 300, Y * 0.05 * 40, R * 0.05 * 300])
+                         P * speed_factor * 300, Y * speed_factor * 40, R * speed_factor * 300])
 
         if np.any(step):
             snekbot.set_target_position(step)
