@@ -66,7 +66,7 @@ while running:
         right_trigger = joystick.get_axis(5)  # Assuming axis 5 is right trigger
 
         new_theta = theta + right_trigger * trigger_sensitivity - left_trigger * trigger_sensitivity
-        new_theta = np.clip(new_theta, -np.pi, np.pi)  # Constrain within [-π, π]
+        new_theta = np.clip(new_theta, 0.5, np.pi)  # Constrain within [-π, π]
 
         if new_theta != theta:
             theta = new_theta
