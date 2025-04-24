@@ -1,4 +1,7 @@
 import numpy as np
+import os
+os.environ["SDL_VIDEODRIVER"] = "dummy"
+import pygame
 import pygame
 print(pygame.__version__)
 import time
