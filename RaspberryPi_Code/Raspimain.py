@@ -72,7 +72,7 @@ while running:
             theta = new_theta
             snekbot.move_grippers(theta)
 
-        step = np.array([z_axis * 0.05 * 1.5, x_axis * 0.05, y_axis * speed_factor, 
+        step = np.array([z_axis * 0.05 * 1.5, x_axis * 0.05, y_axis * 0.05, 
                          P * speed_factor * 300, Y * speed_factor * 40, R * speed_factor * 300])
 
         if np.any(step):
