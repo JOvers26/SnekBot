@@ -62,10 +62,8 @@ mcpwm_timer_handle_t timer2;
 mcpwm_oper_handle_t operator2;
 mcpwm_cmpr_handle_t comparator21;
 mcpwm_cmpr_handle_t comparator22;
-mcpwm_cmpr_handle_t comparator23;
 mcpwm_gen_handle_t generator21;
 mcpwm_gen_handle_t generator22;
-mcpwm_gen_handle_t generator23;
 
 
 
@@ -96,7 +94,7 @@ static void set_servo_angle_radians(mcpwm_cmpr_handle_t comparator, float radian
 static void setup_pwm(void) {
     // Timer 0 setup (for JOINT_1, JOINT_2, JOINT_3)
     mcpwm_timer_config_t timer_config = {
-        .group_id = 0,
+        .group_id = 1,
         .clk_src = MCPWM_TIMER_CLK_SRC_DEFAULT,
         .resolution_hz = 1000000,  
         .count_mode = MCPWM_TIMER_COUNT_MODE_UP,
@@ -207,20 +205,6 @@ static void setup_pwm(void) {
     mcpwm_generator_set_action_on_compare_event(generator22,
         MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator22, MCPWM_GEN_ACTION_LOW));
 
-    // (Gripper)
-    mcpwm_comparator_config_t comparator23_config = {.flags.update_cmp_on_tez = true};
-    mcpwm_new_comparator(operator2, &comparator23_config, &comparator23);
-    mcpwm_generator_config_t generator23_config = {
-        .gen_gpio_num = JOINT_G,
-        .flags.invert_pwm = false
-    };
-    mcpwm_new_generator(operator2, &generator23_config, &generator23);
-    mcpwm_generator_set_action_on_timer_event(generator23,
-        MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
-    mcpwm_generator_set_action_on_compare_event(generator23,
-        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator23, MCPWM_GEN_ACTION_LOW));
-    
-
     // Start all timers
     mcpwm_timer_enable(timer0);
     mcpwm_timer_start_stop(timer0, MCPWM_TIMER_START_NO_STOP);
@@ -263,9 +247,6 @@ void snekbot_joint_state_callback(const void * msgin)
         }
         else if (strcmp(msg->name.data[i].data, "joint_6") == 0) {
             set_servo_angle_radians(comparator22, (float)msg->position.data[i]);
-        }
-        else if (strcmp(msg->name.data[i].data, "gripper") == 0) {
-            set_servo_angle_radians(comparator23, (float)msg->position.data[i]);
         }
         
     }
