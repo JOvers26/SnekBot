@@ -27,7 +27,7 @@ time.sleep(1)
 print("Moving from init to stance")
 snekbot.move_to_joint_position(snekbot.configs["init"], snekbot.configs["stance"], 200)
 
-speed_factor = 0.01
+speed_factor = 0.05
 running = True
 
 theta = 0  # Variable controlled by triggers
@@ -73,7 +73,7 @@ while running:
             snekbot.move_grippers(theta)
 
         step = np.array([z_axis * speed_factor * 3, x_axis * speed_factor, y_axis * speed_factor, 
-                         P * speed_factor * 300, Y * speed_factor * 40, R * speed_factor * 300])
+                         P * speed_factor * 300, Y * 0.05 * 40, R * speed_factor * 300])
 
         if np.any(step):
             snekbot.set_target_position(step)
