@@ -135,6 +135,9 @@ static void setup_pwm(void) {
     mcpwm_new_operator(&operator_config, &operator2);
     mcpwm_operator_connect_timer(operator2, timer2);
 
+    mcpwm_new_operator(&operator_config, &operator3);
+    mcpwm_operator_connect_timer(operator3, timer3);
+
     // Comparator and generator setup for each joint and timer
 
     // Timer 0 (for JOINT_1, JOINT_2, JOINT_3)
@@ -219,6 +222,18 @@ static void setup_pwm(void) {
     mcpwm_generator_set_action_on_compare_event(generator22,
         MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator22, MCPWM_GEN_ACTION_LOW));
 
+    mcpwm_comparator_config_t comparator31_config = {.flags.update_cmp_on_tez = true};
+    mcpwm_new_comparator(operator3, &comparator31_config, &comparator31);
+    mcpwm_generator_config_t generator31_config = {
+        .gen_gpio_num = JOINT_G,
+        .flags.invert_pwm = false
+    };
+    mcpwm_new_generator(operator3, &generator31_config, &generator31);
+    mcpwm_generator_set_action_on_timer_event(generator31,
+        MCPWM_GEN_TIMER_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, MCPWM_TIMER_EVENT_EMPTY, MCPWM_GEN_ACTION_HIGH));
+    mcpwm_generator_set_action_on_compare_event(generator31,
+        MCPWM_GEN_COMPARE_EVENT_ACTION(MCPWM_TIMER_DIRECTION_UP, comparator31, MCPWM_GEN_ACTION_LOW));
+
     // Start all timers
     mcpwm_timer_enable(timer0);
     mcpwm_timer_start_stop(timer0, MCPWM_TIMER_START_NO_STOP);
@@ -228,6 +243,9 @@ static void setup_pwm(void) {
     
     mcpwm_timer_enable(timer2);
     mcpwm_timer_start_stop(timer2, MCPWM_TIMER_START_NO_STOP);
+
+    mcpwm_timer_enable(timer3);
+    mcpwm_timer_start_stop(timer3, MCPWM_TIMER_START_NO_STOP);
 }
 
 
