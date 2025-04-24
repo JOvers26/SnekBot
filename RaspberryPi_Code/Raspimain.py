@@ -50,9 +50,9 @@ while running:
 
         z_axis = 0
         if joystick.get_button(4):
-            z_axis = -0.3
+            z_axis = -0.6
         elif joystick.get_button(5):
-            z_axis = 0.3
+            z_axis = 0.6
 
         Y = 0
         hat = joystick.get_hat(0)
