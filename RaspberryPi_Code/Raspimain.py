@@ -31,7 +31,7 @@ theta = 0  # Variable controlled by triggers
 trigger_sensitivity = 0.1  # Adjust sensitivity of trigger input
 
 while running:
-    pygame.event.pump()
+    #pygame.event.pump()
 
     if joystick.get_button(0):
         snekbot.move_to_joint_position(snekbot.q, snekbot.configs["init"], 200)
