@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Activate Python virtual environment
+source venv/bin/activate
+
 # Source ROS 2 environment
 source /opt/ros/jazzy/setup.bash
 
@@ -17,28 +20,22 @@ source install/setup.bash
 
 # Launching micro_ros_agent
 echo "🚀 Launching micro_ros_agent..."
-ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888 & 
+ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888 &
 MICRO_PID=$!
 
-# Allow a short time to check if the agent started
+# Launching foxglove_bridge
+echo "🌉 Launching foxglove_bridge..."
+ros2 run foxglove_bridge foxglove_bridge &
+BRIDGE_PID=$!
+
+# Launching Raspimain.py
+echo "🐍 Launching Raspimain.py..."
+cd ~/SnekBot/RaspberryPi_Code || { echo "❌ Failed to navigate to RaspberryPi_Code directory."; exit 1; }
+python3 Raspimain.py &
+PYTHON_PID=$!
+
+# Allow time for all processes to initialize
 sleep 2
 
-# Check if the micro-ROS agent failed
-if ! kill -0 $MICRO_PID 2>/dev/null; then
-    echo "❌ micro_ros_agent failed to start."
-    echo "🔧 Running build_micro_ros.sh and trying again..."
-
-    # Kill any leftover process
-    kill $MICRO_PID 2>/dev/null
-
-    # Run the build script
-    bash ~/ros2_ws/src/build_micro_ros.sh
-
-    echo "🔁 Retrying micro_ros_agent..."
-
-    # Retry launching micro-ROS agent
-    ros2 run micro_ros_agent micro_ros_agent udp4 --port 8888 &
-fi
-
-# Wait for background processes
-wait
+# Wait for all background processes
+wait $MICRO_PID $BRIDGE_PID $PYTHON_PID
