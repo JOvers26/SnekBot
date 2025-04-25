@@ -61,6 +61,16 @@ while running:
         elif hat[0] == -1:
             Y = 0.1
 
+        pivot = 0
+        hat = joystick.get_hat(0)
+        if hat[1] == 1:
+            pivot = -1
+        elif hat[1] == -1:
+            pivot = 1
+
+        if pivot != 0:
+            snekbot.increment_joint1(pivot)
+
         # Trigger controls for theta
         left_trigger = joystick.get_axis(2)  # Assuming axis 4 is left trigger
         right_trigger = joystick.get_axis(5)  # Assuming axis 5 is right trigger

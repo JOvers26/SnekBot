@@ -66,6 +66,15 @@ class SnekBot(ERobot):
             self.control_thread = threading.Thread(target=self._move_loop, daemon=True)
             self.control_thread.start()
 
+    def increment_joint1(self, delta):
+        new_q = self.q.copy()
+        new_q[0] += delta
+        new_q[0] = np.clip(new_q[0], -np.pi, np.pi)
+        self.q = new_q
+        self.set_position()
+        self.publish_joint_state()
+        print(f"Joint 1 updated by {delta:.3f} rad → New position: {self.q[0]:.3f} rad")
+
     def _move_loop(self):     
         while self.running:
             if self.target_position is None:
