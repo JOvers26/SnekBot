@@ -48,7 +48,7 @@ fi
 
 # Launch MJPG-streamer
 echo "📷 Launching MJPG-streamer..."
-cd ~/SnekBot/mjpg-streamer/mjpg-streamer-experimental || { echo "❌ Failed to navigate to mjpg-streamer directory."; exit 1; }
+cd ~/SnekBot/mjpg-streamer-master/mjpg-streamer-experimental || { echo "❌ Failed to navigate to mjpg-streamer directory."; exit 1; }
 ./mjpg_streamer -i "./input_uvc.so -y -n -f 30 -r 640x480" -o "./output_http.so -w ./www" &
 STREAMER_PID=$!
 
