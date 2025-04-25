@@ -34,11 +34,11 @@ echo "🌉 Launching foxglove_bridge..."
 ros2 run foxglove_bridge foxglove_bridge &
 BRIDGE_PID=$!
 
-# Launch Python main
-echo "🐍 Launching Raspimain.py..."
-cd ~/SnekBot/RaspberryPi_Code || { echo "❌ Failed to navigate to RaspberryPi_Code directory."; exit 1; }
-python3 Raspimain.py &
-PYTHON_PID=$!
+# # Launch Python main
+# echo "🐍 Launching Raspimain.py..."
+# cd ~/SnekBot/RaspberryPi_Code || { echo "❌ Failed to navigate to RaspberryPi_Code directory."; exit 1; }
+# python3 Raspimain.py &
+# PYTHON_PID=$!
 
 # Check webcam
 if [ ! -e /dev/video0 ]; then
