@@ -9,3 +9,5 @@ make
 sudo make install
 
 ./mjpg_streamer -i "./input_uvc.so -y -n -f 30 -r 640x480" -o "./output_http.so -w ./www"
+
+http://192.168.137.193:8080/?action=stream
