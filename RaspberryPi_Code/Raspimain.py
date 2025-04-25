@@ -64,9 +64,9 @@ while running:
         pivot = 0
         hat = joystick.get_hat(0)
         if hat[1] == 1:
-            pivot = -0.06
+            pivot = -0.03
         elif hat[1] == -1:
-            pivot = 0.06
+            pivot = 0.03
 
         if pivot != 0:
             snekbot.increment_joint1(pivot)
