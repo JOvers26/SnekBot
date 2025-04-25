@@ -22,7 +22,7 @@ class SnekBot(ERobot):
         args = super().URDF_read(str(urdf_path))
         super().__init__(args[0], name=args[1])
 
-        self.addconfiguration("init", np.deg2rad([0, -135, -45, 0, 0, 0]))
+        self.addconfiguration("init", np.deg2rad([0, -135, -135, 0, 50, 0]))
         self.addconfiguration("stance", np.deg2rad([0, 20, -20, 0, -50, 0]))
         self.q = self.configs["init"]
 
