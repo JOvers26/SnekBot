@@ -1,7 +1,11 @@
 sudo apt update
-sudo apt install -y python3-pip python3-pyqt5 libcamera-dev libcamera-apps
+sudo apt install cmake libjpeg8-dev
+sudo apt install libv4l-dev
 
-git clone https://github.com/raspberrypi/picamera2.git
-cd picamera2
+cd ~
+git clone https://github.com/jacksonliam/mjpg-streamer.git
+cd mjpg-streamer/mjpg-streamer-experimental
+make
+sudo make install
 
-pip3 install .
+./mjpg_streamer -i "./input_uvc.so -y -n -f 30 -r 640x480" -o "./output_http.so -w ./www"
