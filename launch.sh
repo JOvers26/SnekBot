@@ -9,7 +9,7 @@ cd ~/SnekBot/ros2_ws || { echo "❌ Failed to navigate to ros2_ws directory."; e
 
 # Build the workspace
 echo "🚀 Running colcon build..."
-colcon build --symlink-install
+colcon build --symlink-install 
 
 # Source the setup file after building
 echo "🔧 Sourcing the setup file..."
