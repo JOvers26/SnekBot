@@ -283,7 +283,6 @@ void snekbot_joint_state_callback(const void * msgin)
             set_servo_angle_radians(comparator22, (float)msg->position.data[i]);
         }
         else if (strcmp(msg->name.data[i].data, "gripper") == 0) {
-            printf("penis!\n");
             set_servo_angle_radians(comparator31, (float)msg->position.data[i]);
         }
         
