@@ -316,7 +316,7 @@ void micro_ros_task(void * arg)
         &snekbot_joint_state_subscriber,
         &node,
         ROSIDL_GET_MSG_TYPE_SUPPORT(sensor_msgs, msg, JointState),
-        "snekbot/test_joint_states"));
+        "snekbot/joint_states"));
 
     // Allocate memory for received message
     recv_joint_state_msg.position.capacity = NUM_JOINTS;  // Updated to 7 joints

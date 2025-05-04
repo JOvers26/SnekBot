@@ -41,7 +41,7 @@ class SnekBot(ERobot):
         self.node = Node('snekbot_node')
         
         # Create joint state publisher
-        self.joint_state_pub = self.node.create_publisher(JointState, 'snekbot/test_joint_states', 10)
+        self.joint_state_pub = self.node.create_publisher(JointState, 'snekbot/joint_states', 10)
 
     @staticmethod
     def get_urdf_path(urdf_filename):
