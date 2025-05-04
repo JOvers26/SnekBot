@@ -16,13 +16,13 @@
 #include <rclc/executor.h>
 
 #include "driver/mcpwm_prelude.h"
-#include <math.h>  // For M_PI constant
+#include <math.h>
 
 #ifdef CONFIG_MICRO_ROS_ESP_XRCE_DDS_MIDDLEWARE
 #include <rmw_microros/rmw_microros.h>
 #endif
 
-#define NUM_JOINTS 7  // Updated to 7 to include the gripper
+#define NUM_JOINTS 7
 #define RCCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Aborting.\n", __LINE__, (int)temp_rc); vTaskDelete(NULL);} }
 #define RCSOFTCHECK(fn) { rcl_ret_t temp_rc = fn; if((temp_rc != RCL_RET_OK)){printf("Failed status on line %d: %d. Continuing.\n", __LINE__, (int)temp_rc);} }
 
@@ -37,10 +37,10 @@ sensor_msgs__msg__JointState recv_joint_state_msg;
 #define JOINT_5 40
 #define JOINT_6 39
 #define JOINT_G 38
-#define SERVO_MIN_PULSEWIDTH_US 500   // Minimum pulse width (0°)
-#define SERVO_MAX_PULSEWIDTH_US 2500  // Maximum pulse width (180°)
-#define SERVO_MAX_DEGREE 270          // Maximum degree of rotation
-#define PI 3.14159265359               // Define constant PI
+#define SERVO_MIN_PULSEWIDTH_US 500 
+#define SERVO_MAX_PULSEWIDTH_US 2500
+#define SERVO_MAX_DEGREE 270
+#define PI 3.14159265359
 
 mcpwm_timer_handle_t timer0;
 mcpwm_oper_handle_t operator0;
@@ -72,22 +72,18 @@ mcpwm_gen_handle_t generator31;
 
 
 static uint32_t radians_to_angle(float radians) {
-    // Map radians to degrees where -PI -> 0° and PI -> 180°
     float angle = ((radians + M_PI) / (2 * M_PI)) * SERVO_MAX_DEGREE;
     
-    // Ensure the angle stays within 0-180 range
     if (angle < 0) angle = 0;
     if (angle > SERVO_MAX_DEGREE) angle = SERVO_MAX_DEGREE;
     
     return (uint32_t)angle;
 }
 
-// Convert an angle (in degrees) to a pulse width in microseconds
 static uint32_t angle_to_pulsewidth(uint32_t angle) {
     return SERVO_MIN_PULSEWIDTH_US + (angle * (SERVO_MAX_PULSEWIDTH_US - SERVO_MIN_PULSEWIDTH_US) / SERVO_MAX_DEGREE);
 }
 
-// Move servo based on radians input
 static void set_servo_angle_radians(mcpwm_cmpr_handle_t comparator, float radians) {
     uint32_t angle = radians_to_angle(radians);
     uint32_t pulse_width = angle_to_pulsewidth(angle);
@@ -319,11 +315,11 @@ void micro_ros_task(void * arg)
         "snekbot/joint_states"));
 
     // Allocate memory for received message
-    recv_joint_state_msg.position.capacity = NUM_JOINTS;  // Updated to 7 joints
+    recv_joint_state_msg.position.capacity = NUM_JOINTS;
     recv_joint_state_msg.position.size = 0;
     recv_joint_state_msg.position.data = malloc(NUM_JOINTS * sizeof(double));
     
-    recv_joint_state_msg.name.capacity = NUM_JOINTS;  // Updated to 7 joints
+    recv_joint_state_msg.name.capacity = NUM_JOINTS;
     recv_joint_state_msg.name.size = 0;
     recv_joint_state_msg.name.data = malloc(NUM_JOINTS * sizeof(rosidl_runtime_c__String));
     
@@ -374,10 +370,9 @@ void app_main(void)
     ESP_ERROR_CHECK(uros_network_interface_initialize());
 #endif
 
-    // Create the micro-ROS task with increased stack size
     xTaskCreate(micro_ros_task,
                 "uros_task",
-                8 * 1024,  // Increased stack size
+                8 * 1024,
                 NULL,
                 CONFIG_MICRO_ROS_APP_TASK_PRIO,
                 NULL);

@@ -34,13 +34,13 @@ class SnekBot(ERobot):
         self.target_position = None
         self.running = False
         self.control_thread = None
-        self.gripper_position = 0.0  # Initialize gripper position
+        self.gripper_position = 0.0
 
         # ROS 2 Node Initialization
         rclpy.init()
         self.node = Node('snekbot_node')
         
-        # Create joint state publisher
+        # joint state publisher
         self.joint_state_pub = self.node.create_publisher(JointState, 'snekbot/joint_states', 10)
 
     @staticmethod
@@ -89,7 +89,6 @@ class SnekBot(ERobot):
 
             arrived = False
             while not arrived:
-                print(self.q)  # Send joint data
                 self.publish_joint_state()  # Publish joint states
                 if not np.array_equal(self.target_position, np.array([x, y, z, R, P, Y])):
                     break
@@ -103,9 +102,9 @@ class SnekBot(ERobot):
                 self.target_position = None
 
     def move_grippers(self, theta):
-        self.gripper_position = theta  # Store gripper position
+        self.gripper_position = theta
         print(f"Gripper position: {theta}")  
-        self.publish_joint_state()  # Publish updated joint state with gripper
+        self.publish_joint_state()
 
     def stop_movement(self):
         self.running = False
@@ -115,7 +114,7 @@ class SnekBot(ERobot):
     def publish_joint_state(self):
         joint_state_msg = JointState()
         joint_state_msg.header.stamp = rclpy.time.Time().to_msg()
-        joint_state_msg.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6', 'gripper']  # Added 'gripper'
+        joint_state_msg.name = ['joint_1', 'joint_2', 'joint_3', 'joint_4', 'joint_5', 'joint_6', 'gripper']
         joint_state_msg.position = self.q.tolist() + [self.gripper_position]  # Append gripper position
         self.joint_state_pub.publish(joint_state_msg)
         print("Published: " + str(joint_state_msg))
@@ -123,7 +122,7 @@ class SnekBot(ERobot):
 def main():
     snekbot = SnekBot()
     snekbot.move_to_joint_position(snekbot.configs["init"], snekbot.configs["stance"], 50)
-    snekbot.move_grippers(0.5)  # Example gripper position
+    snekbot.move_grippers(0.5)
     snekbot.stop_movement()
 
 if __name__ == '__main__':

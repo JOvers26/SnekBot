@@ -30,8 +30,8 @@ snekbot.move_to_joint_position(snekbot.configs["init"], snekbot.configs["stance"
 speed_factor = 0.02
 running = True
 
-theta = 0  # Variable controlled by triggers
-trigger_sensitivity = 0.1  # Adjust sensitivity of trigger input
+theta = 0
+trigger_sensitivity = 0.1
 
 while running:
     pygame.event.pump()
@@ -71,12 +71,11 @@ while running:
         if pivot != 0:
             snekbot.increment_joint1(pivot)
 
-        # Trigger controls for theta
-        left_trigger = joystick.get_axis(2)  # Assuming axis 4 is left trigger
-        right_trigger = joystick.get_axis(5)  # Assuming axis 5 is right trigger
+        left_trigger = joystick.get_axis(2)
+        right_trigger = joystick.get_axis(5)
 
         new_theta = theta + right_trigger * trigger_sensitivity - left_trigger * trigger_sensitivity
-        new_theta = np.clip(new_theta, 0.5, np.pi)  # Constrain within [-π, π]
+        new_theta = np.clip(new_theta, 0.5, np.pi)
 
         if new_theta != theta:
             theta = new_theta
